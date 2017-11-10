@@ -71,6 +71,7 @@ def get_means_CIs(data_df, rep_num, category_column, data_column, rep_column='re
 def compare_means_bar(data_df, rep_num, category_column, data_column, compare,
                       xlabel, ylabel, colors=[], rep_column='rep', categories=[],
                       ci=95, width=0.3, space=0.5, alpha=1, style=None, title=None, label=[],
+                      tfontsize=18, xlfontsize=15, ylfontsize=15, lfontsize=10, yfontsize=9,
                       error_kw={'ecolor': '0.3'}, save_fig=False, fig_fname=None):
     '''
     data that will be compared should be specified by rep and category(xlabel),
@@ -120,13 +121,13 @@ def compare_means_bar(data_df, rep_num, category_column, data_column, compare,
                    yerr=yerrs, error_kw=error_kw, label=l)
 
         if title:
-            ax.set_title(title)
-        ax.set_xlabel(xlabel)
-        ax.set_ylabel(ylabel)
-        print(index)
+            ax.set_title(title, fontsize=tfontsize)
+        ax.set_xlabel(xlabel, fontsize=xlfontsize)
+        ax.set_ylabel(ylabel, fontsize=ylfontsize)
         ax.set_xticks(index+(width/2)*(len(v)-1))
         ax.set_xticklabels(categories)
-        ax.legend()
+        ax.tick_params(labelsize=yfontsize)
+        ax.legend(fontsize=lfontsize)
 
         fig.tight_layout()
         if save_fig:
@@ -137,6 +138,7 @@ def compare_means_bar(data_df, rep_num, category_column, data_column, compare,
 def compare_means_bar_loop(data_df, rep_num, category_column, data_column, compare, series,
                       xlabel, ylabel, colors=[], rep_column='rep', categories=[],
                       ci=95, width=0.3, space=0.5, alpha=1, title=None, label=[], style=None,
+                      tfontsize=18, xlfontsize=15, ylfontsize=15, lfontsize=10, yfontsize=9,
                       error_kw={'ecolor': '0.3'}, save_fig=False, fig_fname_pre=None):
     '''
     Compare means of data that is specified by category and replication columns and
@@ -152,7 +154,7 @@ def compare_means_bar_loop(data_df, rep_num, category_column, data_column, compa
     for kc, vc in compare.items():
 
         for ac in vc:
-            concat_list.append(dat_df[dat_df[kc] == ac])
+            concat_list.append(data_df[data_df[kc] == ac])
 
     tmp_df = pd.concat(concat_list)
 
@@ -174,7 +176,9 @@ def compare_means_bar_loop(data_df, rep_num, category_column, data_column, compa
                               compare=compare, xlabel=xlabel, ylabel=ylabel, style=style,
                               colors=colors, rep_column=rep_column, categories=categories,
                               ci=ci, width=width, space=space, alpha=alpha, title=title,
-                              label=label,error_kw=error_kw, save_fig=save_fig, fig_fname=fig_fname)
+                              label=label, error_kw=error_kw, tfontsize=tfontsize, xlfontsize=xlfontsize,
+                              ylfontsize=ylfontsize, lfontsize=lfontsize, yfontsize=yfontsize,
+                              save_fig=save_fig, fig_fname=fig_fname)
 
 if '__name__' == '__main__':
 	get_means_CIs()
