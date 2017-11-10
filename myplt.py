@@ -6,7 +6,7 @@ import numpy as np
 def get_means_CIs(data_df, rep_num, category_column, data_column, rep_column='rep',
                   xlabel=None, ylabel=None, label=None, categories=None, style=None,
                   ci=95, width=0.3, space=0.5, alpha=1, color='#e41a1c', error_kw={'ecolor': '0.3'},
-                  show_fig=False, save_fig=False, fig_fname=None):
+                  show_fig=False, save_fig=False, fig_fname=None, return_fmt='array'):
     '''
     values that will be plotted should be contained
     as being specified by category and rep values in data_df
@@ -63,10 +63,14 @@ def get_means_CIs(data_df, rep_num, category_column, data_column, rep_column='re
         fig.tight_layout()
         if save_fig:
             plt.savefig(fig_fname, format = 'png', dpi=300)
+            df.to_csv(fig_fname)
 
         plt.show()
 
-    return [means_array, yerrs]
+    if return_fmt == 'array':
+        return  [means_array, yerrs]
+    elif return_fmt == 'df':
+        return pd.DataFrame({'mean': means_array, 'lower_ci': lower_ci_array, 'upper_ci': upper_ci_array})
 
 def compare_means_bar(data_df, rep_num, category_column, data_column, compare,
                       xlabel, ylabel, colors=[], rep_column='rep', categories=[],
@@ -83,6 +87,7 @@ def compare_means_bar(data_df, rep_num, category_column, data_column, compare,
         categories = list(set(data_df[category_column].tolist()))
         categories.sort()
     color_list = ['#e41a1c', '#377eb8', '#4daf4a', '#984ea3', '#ff7f00', '#ffff33', '#a65628', '#f781bf']
+    summary_df = pd.DataFrame(index=[], columns=[])
 
     for k, v in compare.items():
 
@@ -95,6 +100,10 @@ def compare_means_bar(data_df, rep_num, category_column, data_column, compare,
             plt.style.use(style)
         fig, ax = plt.subplots()
 
+        if v == 'all':
+            v = list(set(data_df[k].tolist()))
+            v.sort()
+
         for i, a in enumerate(v):
 
             print(k, a)
@@ -103,7 +112,7 @@ def compare_means_bar(data_df, rep_num, category_column, data_column, compare,
             means_array = []
             yerrs = []
             means_array, yerrs = get_means_CIs(data_df=data, rep_num=rep_num,
-                                               category_column=category_column,
+                                               category_column=category_column, return_fmt='array',
                                                data_column=data_column, categories=categories)
 
             print('mean array:', means_array)
@@ -119,6 +128,19 @@ def compare_means_bar(data_df, rep_num, category_column, data_column, compare,
 
             ax.bar(x, means_array, width=width, alpha=alpha, color=colors[i],
                    yerr=yerrs, error_kw=error_kw, label=l)
+            # make summary DataFrame
+            lower_yerr = yerrs[0]
+            upper_yerr = yerrs[1]
+            lower_ci = means_array - lower_yerr
+            upper_ci = means_array + upper_yerr
+
+            if len(summary_df.index) == 0:
+                summary_df = pd.DataFrame({'{}_mean'.format(l): means_array, '{}_lower_ci'.format(l): lower_ci, '{}_upper_ci'.format(l): upper_ci})
+
+            else:
+                summary_df['{}_mean'.format(l)] = means_array
+                summary_df['{}_lower_ci'.format(l)] = lower_ci
+                summary_df['{}_upper_ci'.format(l)] = upper_ci
 
         if title:
             ax.set_title(title, fontsize=tfontsize)
@@ -134,6 +156,8 @@ def compare_means_bar(data_df, rep_num, category_column, data_column, compare,
             plt.savefig(fig_fname, format = 'png', dpi=300)
 
         plt.show()
+
+    return summary_df
 
 def compare_means_bar_loop(data_df, rep_num, category_column, data_column, compare, series,
                       xlabel, ylabel, colors=[], rep_column='rep', categories=[],
