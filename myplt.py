@@ -82,7 +82,7 @@ def get_means_CIs(data_df, rep_num, category_column, data_column, rep_column='re
         return df
 
 def compare_means_bar(data_df, rep_num, category_column, data_column, compare,
-                      xlabel, ylabel, colors=[], rep_column='rep', categories_list=[], xticklabels=None,
+                      xlabel, ylabel, colors=[], rep_column='rep', categories=[], xticklabels=None,
                       ci=95, width=0.3, space=0.5, alpha=1, style=None, title=None, label=[],
                       tfontsize=18, xlfontsize=15, ylfontsize=15, lfontsize=10, yfontsize=9,
                       error_kw={'ecolor': '0.3', 'elinewidth':'1'}, save_fig=False, fig_fname=None):
@@ -97,6 +97,10 @@ def compare_means_bar(data_df, rep_num, category_column, data_column, compare,
     summary_df = pd.DataFrame(index=[], columns=[])
     column_list = []
 
+    if not categories:
+        categories = list(set(data_df[category_column].tolist()))
+        categories.sort()
+    
     for k, v in compare.items():
 
         if not colors:
@@ -123,7 +127,7 @@ def compare_means_bar(data_df, rep_num, category_column, data_column, compare,
 
             means_array, yerrs = get_means_CIs(data_df=data, rep_num=rep_num,
                                                category_column=category_column, return_fmt='array',
-                                               data_column=data_column, categories=categories_list)
+                                               data_column=data_column, categories=categories)
             print('mean array:', means_array)
             print('yerr arrays:',yerrs)
 
@@ -139,12 +143,6 @@ def compare_means_bar(data_df, rep_num, category_column, data_column, compare,
             # make bar plot
             ax.bar(x, means_array, width=width, alpha=alpha, color=colors[i],
                    yerr=yerrs, error_kw=error_kw, label=l)
-            # set xticklabels
-            ax.set_xticks(index+(width/2)*(len(v)-1))
-            if xticklabels:
-                ax.set_xticklabels(xticklabels)
-            else:
-                ax.set_xticklabels(categories_list)
             # make summary DataFrame
             lower_yerr = yerrs[0]
             upper_yerr = yerrs[1]
@@ -164,7 +162,12 @@ def compare_means_bar(data_df, rep_num, category_column, data_column, compare,
             ax.set_title(title, fontsize=tfontsize)
         ax.set_xlabel(xlabel, fontsize=xlfontsize)
         ax.set_ylabel(ylabel, fontsize=ylfontsize)
-
+        # set xticklabels
+        ax.set_xticks(index+(width/2)*(len(v)-1))
+        if xticklabels:
+            ax.set_xticklabels(xticklabels)
+        else:
+            ax.set_xticklabels(categories)
         ax.tick_params(labelsize=yfontsize)
         ax.legend(fontsize=lfontsize)
 
