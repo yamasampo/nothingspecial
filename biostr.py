@@ -107,3 +107,9 @@ def write_big_pickle(pickle, out_path):
 
         for idx in range(0, n_bytes, max_bytes):
             f_out.write(bytes_out[idx:idx+max_bytes])
+
+def pkg_version(pkg):
+    import pkg_resources
+    for dist in pkg_resources.working_set:
+        if dist.project_name == pkg:
+            print(dist.project_name, dist.version)
