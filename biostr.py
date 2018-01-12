@@ -4,7 +4,7 @@ import re
 import pandas as pd
 import pickle
 
-def get_fasta_df(fasta_path):
+def fasta_parser(fasta_path):
     ## dataframe for mfa database
     # get paths
     dname = os.path.basename(os.path.dirname(fasta_path))
@@ -24,15 +24,21 @@ def get_fasta_df(fasta_path):
         for line in f.readlines():
 
             if line.startswith('>'):
-                seq_name = line[1:-1]
+                if seq_name:
+                    dname_list.append(dname)
+                    fname_list.append(fname)
+                    seqname_list.append(seq_name)
+                    seq_list.append(''.join(tmp_seq))
 
+                seq_name = line[1:-1].split(' ')[0]
+                tmp_seq = []
             else:
-                seq = line.rstrip()
-
-                dname_list.append(dname)
-                fname_list.append(fname)
-                seqname_list.append(seq_name)
-                seq_list.append(seq)
+                tmp_seq.append(line[:-1])
+        if seq_name:
+            dname_list.append(dname)
+            fname_list.append(fname)
+            seqname_list.append(seq_name)
+            seq_list.append(''.join(tmp_seq))
 
     # create dataframe
     fasta_df = pd.DataFrame({'dir_name': dname_list,
@@ -40,11 +46,71 @@ def get_fasta_df(fasta_path):
                            'seqname': seqname_list,
                            'seq': seq_list
                            })
+    print('{0} items in {1}.'.format(len(fasta_df.index), fasta_path))
     # rearrange columns
     return fasta_df.ix[:,['dir_name',
                           'file_name',
                           'seqname',
                           'seq']]
+
+def fastq_parser(fastq_path):
+    '''
+    Returns a DataFrame(pandas) object.
+    fastq_parser assumes that a sequence has 4 lines and there is no empty line.
+    '''
+    name_list = []
+    seq_list = []
+    name2_list = []
+    qual_list = []
+    n = 1
+
+    with open(fastq_path, 'r') as f:
+        for l in f.readlines():
+            if n == 1:
+                name_list.append(l[:-1])
+                n += 1
+            elif n == 2:
+                seq_list.append(l[:-1])
+                n += 1
+            elif n == 3:
+                name2_list.append(l[:-1])
+                n += 1
+            elif n == 4:
+                qual_list.append(l[:-1])
+                n = 1
+    df = pd.DataFrame({'seqname': name_list,
+                       'seq': seq_list,
+                       'qualname': name2_list,
+                       'qual': qual_list})
+    print('{0} items in {1}.'.format(len(df.index), fastq_path))
+    return df.ix[:, ['seqname', 'seq', 'qualname', 'qual']]
+
+def to_fastq(fastq, file_name):
+    '''
+    Write to a fastq file.
+    Parameters
+    ----------
+        fastq: DataFrame
+            parsed fastq file to a DataFrame
+        file_name: str
+            data will be written in this file.
+    '''
+    fastq_lines = []
+    cnt = 0
+
+    for i, row in fastq.iterrows():
+        fastq_lines.append(row['seqname'])
+        fastq_lines.append(row['seq'])
+        fastq_lines.append(row['qualname'])
+        fastq_lines.append(row['qual'])
+
+        cnt += 1
+        if cnt % 1000 == 0:
+            print('.', end='', flush=True)
+
+    with open(file_name, 'w') as f:
+        print('\n'.join(fastq_lines), file=f)
+        print(' Written in {}'.format(file_name))
 
 def to_filelist(dir_path):
 
