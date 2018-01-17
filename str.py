@@ -150,6 +150,18 @@ def get_file_list(path, avoid='itemnum', prefix=None, sufix=None):
 
     return flist
 
+def match_2lists(list1, list2):
+    '''
+    Returns a list containing identical items between two given lists.
+    '''
+    match_list = []
+    auxDict = dict.fromkeys(list1)
+    for item in list2:
+        if item in auxDict:
+            match_list.append(item)
+            auxDict[item] = None
+    return match_list
+
 def read_big_pickle(pickle_path):
 
     bytes_in = bytearray(0)
