@@ -118,10 +118,12 @@ def search(df, **kwargs):
     for k,v in kwargs.items():
         if isinstance(v, tuple):
             for i in v:
+                print('column "{0}" filtered to be "{1}".'.format(k, i))
                 res_df = f(res_df, k, i)
         elif isinstance(v, str):
+            print('column "{0}" filtered to be "{1}".'.format(k, v))
             res_df = f(res_df, k, v)
         elif isinstance(v, int):
+            print('column "{0}" filtered to be "{1}".'.format(k, v))
             res_df = res_df[res_df[k] == v]
-
     return res_df
