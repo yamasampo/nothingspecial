@@ -1,8 +1,9 @@
 import os
+import re
 import pandas as pd
 from collections import Counter
 
-__version__='1.2'
+__version__='1.3'
 __update__='180223'
 __author__='Haruka Yamashita'
 
