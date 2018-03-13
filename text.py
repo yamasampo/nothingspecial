@@ -4,6 +4,10 @@ import re
 import pandas as pd
 import pickle
 
+__version__ = '1.1'
+__updated__ = '180308'
+__author__ = 'Haruka Yamashita'
+
 def fasta_parser(fasta_path):
     ## dataframe for mfa database
     # get paths
@@ -171,7 +175,7 @@ def match_2lists(query_list, ref_list, unmatch=False):
     else:
         return match_list
 
-def sort_strings_by_num(in_list):
+def sort_strings_by_num(data):
     '''
     Sort a series of strings by embedded numbers that are in strnigs.
     '''
@@ -182,9 +186,14 @@ def sort_strings_by_num(in_list):
         pieces[1::2] = map(int, pieces[1::2])
         return pieces
 
-    aux = [(embedded_num(s), s) for s in in_list]
+    aux = [(embedded_num(s), s) for s in data]
     aux.sort()
     return [s for __, s in aux]
+
+def get_key_by_value(dict, value):
+    for k, v in dict.items():
+        if v == value:
+            return k
 
 def read_big_pickle(pickle_path):
 
