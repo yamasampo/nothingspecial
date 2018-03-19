@@ -4,8 +4,8 @@ import pandas as pd
 from collections import Counter
 import numpy as np
 
-__version__='1.4'
-__update__='180315'
+__version__='1.5'
+__update__='180319'
 __author__='Haruka Yamashita'
 
 def slide_window(data_df, win, col_list):
@@ -26,6 +26,11 @@ def slide_window(data_df, win, col_list):
             new_col = '{0}_win{1}'.format(col, win)
 
             data_df.loc[i+((win+1)/2), new_col] = tmp_df.mean()[col]
+
+def step(df, step):
+    index = [i for i in range(len(df.index)) if i % step == 0]
+
+    return df.loc[index, :]
 
 def count_occurrence(df, column, out_path=None, by=None, to_file=True, **kwargs):
     '''
@@ -130,6 +135,16 @@ def search_items_df(df, **kwargs):
             res_df = res_df[res_df[k] == v]
     return res_df
 
+def adjust_average(data, average=1000, divisor=None):
+
+    if divisor:
+        const = average / divisor
+    else:
+        const = average * len(data) / sum(data)
+    out = [const * a for a in data]
+
+    return out
+
 def bootstrap(data, rep_num):
     '''
     Returns a list of means of resampled data.
@@ -186,12 +201,16 @@ def bootstrap_df(df, rep_num, ci=95):
         boot_data = bootstrap(data, rep_num)
 
         # compute median and CI
-        out_list.append(median_CIs(boot_data, ci))
+        quantiles = num.median_CIs(boot_data, ci)
+        out_list.append([a for a in [np.mean(data), np.mean(boot_data),
+                                     quantiles[0], quantiles[1], quantiles[2]]])
         cnt += 1
         if cnt % 100 == 0:
             print('.', end='', flush=True)
 
     print(' Done.', flush=True)
 
-    stat_df = pd.DataFrame(out_list, columns=['ci_{}'.format(100-ci), 'median', 'ci_{}'.format(ci)])
+    stat_df = pd.DataFrame(out_list, columns=['orig_mean', 'boot_mean',
+                                          'ci_{}'.format(100-ci), 'median',
+                                          'ci_{}'.format(ci)])
     return stat_df
