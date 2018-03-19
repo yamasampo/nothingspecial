@@ -4,9 +4,9 @@ import pandas as pd
 from collections import Counter
 import numpy as np
 
-__version__='1.5'
-__update__='180319'
-__author__='Haruka Yamashita'
+__version__ = '1.6'
+__updated__ = '180319'
+__author__ = 'Haruka Yamashita'
 
 def slide_window(data_df, win, col_list):
     '''
@@ -135,13 +135,17 @@ def search_items_df(df, **kwargs):
             res_df = res_df[res_df[k] == v]
     return res_df
 
-def adjust_average(data, average=1000, divisor=None):
+def adjust_average(data, average=1000, divisor=None, integer=False):
 
     if divisor:
         const = average / divisor
     else:
         const = average * len(data) / sum(data)
-    out = [const * a for a in data]
+
+    if integer:
+        out = [round(const * a) for a in data]
+    else:
+        out = [const * a for a in data]
 
     return out
 
@@ -201,7 +205,7 @@ def bootstrap_df(df, rep_num, ci=95):
         boot_data = bootstrap(data, rep_num)
 
         # compute median and CI
-        quantiles = num.median_CIs(boot_data, ci)
+        quantiles = median_CIs(boot_data, ci)
         out_list.append([a for a in [np.mean(data), np.mean(boot_data),
                                      quantiles[0], quantiles[1], quantiles[2]]])
         cnt += 1
