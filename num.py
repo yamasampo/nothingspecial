@@ -4,8 +4,8 @@ import pandas as pd
 from collections import Counter
 import numpy as np
 
-__version__ = '1.6'
-__updated__ = '180319'
+__version__ = '2.0'
+__updated__ = '180327'
 __author__ = 'Haruka Yamashita'
 
 def slide_window(data_df, win, col_list):
@@ -217,4 +217,36 @@ def bootstrap_df(df, rep_num, ci=95):
     stat_df = pd.DataFrame(out_list, columns=['orig_mean', 'boot_mean',
                                           'ci_{}'.format(100-ci), 'median',
                                           'ci_{}'.format(ci)])
+    return stat_df
+
+def bootstrap_df2(df, bin_col, data_col, rep_num, ci=95):
+
+    bin_list = list(set(df[bin_col].tolist()))
+    bin_list.sort()
+
+    cnt = 0
+    out_list = []
+    print('Bootstrap')
+    print('bin column:\t', bin_col)
+    print('data column:\t', data_col)
+    for b in bin_list:
+        # extract data for each category
+        data = np.array(df[df[bin_col] == b][data_col])
+
+        # resample transcripts
+        boot_data = bootstrap(data, rep_num)
+
+        quantiles = median_CIs(boot_data, ci)
+        out_list.append(
+            [a for a in [b, np.mean(data), np.mean(boot_data),
+                         quantiles[0], quantiles[1], quantiles[2]]]
+        )
+        cnt += 1
+        if cnt % 100 == 0:
+            print('.', end='', flush=True)
+    stat_df = pd.DataFrame(
+        out_list,
+        columns=['bin', 'orig_mean', 'boot_mean',
+                 'ci_{}'.format(100-ci), 'median','ci_{}'.format(ci)]
+    )
     return stat_df
