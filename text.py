@@ -5,8 +5,8 @@ import pandas as pd
 import pickle
 from myBasic import num
 
-__version__ = '1.2'
-__updated__ = '180315'
+__version__ = '1.3'
+__updated__ = '180406'
 __author__ = 'Haruka Yamashita'
 
 def fasta_parser(fasta_path):
@@ -137,31 +137,44 @@ def to_filelist(dir_path):
         print('\n'.join(flist), file=f)
 
 
-def get_file_list(path, avoid='itemnum', prefix=None, sufix=None):
-
+def get_file_list(path, avoid='itemnum', prefix='', sufix=''):
+    '''
+    Returns a list of file names that are written in a given file.
+    Parameter
+    ---------
+        path: str
+            a path to a file of file name list
+        avoid: str
+            a word you do not want to include in output file list
+        prefix: str
+            If "prefix" is specified, this word will be contained
+            at the beginning of all file names in output list.
+        sufix: str
+            If "sufix" is specified, this word will be contained
+            at the end of all file names in output list.
+    Return
+    ------
+        flist: list
+            a list that contains all file names listed in a given file.
+    '''
     fname = ''
     flist = []
-
     with open(path, 'r') as f:
-
-        for line in f.readlines():
-
+        for line in f:
             if line.startswith(avoid):
                 continue
-
             if prefix:
                 if sufix:
                     fname = prefix+line.rstrip()+sufix
                 else:
                     fname = prefix+line.rstrip()
-
+            elif sufix:
+                fname = line.rstrip()+sufix
             else:
                 fname = line.rstrip()
-
             flist.append(fname)
 
-    print('{0} items in {1}'.format(len(flist), os.path.basename(os.path.dirname(path))))
-
+    print('{0} items in {1}'.format(len(flist), path))
     return flist
 
 def match_2lists(query_list, ref_list, unmatch=False):
@@ -218,11 +231,11 @@ def read_big_pickle(pickle_path):
 
     return pickle.loads(bytes_in)
 
-def write_big_pickle(pickle, out_path):
+def write_big_pickle(obj, out_path):
 
-    n_bytes = sys.getsizeof(pickle)
+    n_bytes = sys.getsizeof(obj)
     max_bytes = 2**31 - 1
-    bytes_out = pickle.dumps(pickle)
+    bytes_out = pickle.dumps(obj)
 
     with open(out_path, 'wb') as f_out:
 
