@@ -4,8 +4,8 @@ import pandas as pd
 from collections import Counter
 import numpy as np
 
-__version__ = '2.0'
-__updated__ = '180327'
+__version__ = '2.1'
+__updated__ = '180406'
 __author__ = 'Haruka Yamashita'
 
 def slide_window(data_df, win, col_list):
@@ -125,14 +125,12 @@ def search_items_df(df, **kwargs):
     for k,v in kwargs.items():
         if isinstance(v, tuple):
             for i in v:
-                print('search items in "{0}" column mathing to "{1}"'.format(k, v))
                 res_df = f(res_df, k, i)
         elif isinstance(v, str):
-            print('search items in "{0}" column mathing to "{1}"'.format(k, v))
             res_df = f(res_df, k, v)
         elif isinstance(v, int):
-            print('search items in "{0}" column mathing to "{1}"'.format(k, v))
             res_df = res_df[res_df[k] == v]
+
     return res_df
 
 def adjust_average(data, average=1000, divisor=None, integer=False):
