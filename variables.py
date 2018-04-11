@@ -1,6 +1,6 @@
 
-__version__ = '1.1'
-__updated__ = '180406'
+__version__ = '1.2'
+__updated__ = '180411'
 __author__ = 'Haruka Yamashita'
 
 chr_name_dict_all = {
@@ -54,3 +54,18 @@ ws_mutation_group = {
         'WW': ['AT', 'TA'],'SS': ['CG', 'GC']
     }
 }
+
+mutation_compare_set = {
+    'AG': ['AG', 'GA'],
+    'TC': ['TC', 'CT'],
+    'AC': ['AC', 'CA'],
+    'TG': ['TG', 'GT'],
+    'AT': ['AT', 'TA'],
+    'WS': ['WS', 'SW']
+}
+
+cds_seq_df_path='/Volumes/1TB_4TB_GG/Dropbox/Documents_DB/01_Projects/011_Programming/_data/databases/cds/cds_seq_df_180329.csv'
+
+int_seq_df_path = '/Volumes/1TB_4TB_GG/Dropbox/Documents_DB/01_Projects/011_Programming/_data/databases/intron/int_seq_df_m18y22_180330.csv'
+
+mel_site_df_path = '/Volumes/1TB_4TB_GG/Dropbox/Documents_DB/01_Projects/011_Programming/_data/Dmel_ref_info/Dmel_info/site_type_info/site_type_df_180330.csv'
