@@ -4,28 +4,28 @@ import pandas as pd
 from collections import Counter
 import numpy as np
 
-__version__ = '2.1'
-__updated__ = '180406'
+__version__ = '2.2'
+__updated__ = '180522'
 __author__ = 'Haruka Yamashita'
 
-def slide_window(data_df, win, col_list):
+def slide_window(data_df, win_size, dat_col_list):
     '''
-    Parameter:
-        window size: int
-            a width of window to average over.
-        col_list: list
-            a list of column names for calculation.
+    Parameters
+    ----------
+    window size: int
+        a width of window to average over.
+    col_list: list
+        a list of column names to be calculated.
     '''
-    print('{}lines in the given data'.format(len(data_df.index)))
-    print('Parameters\n\twindow size: {0}\n\tcolumns: {1}'.format(win, col_list))
+    print('{} lines in the given data'.format(len(data_df.index)))
+    print('Parameters\n\twindow size: {0}\n\tcolumns: {1}'.format(win_size, dat_col_list))
 
-    for i in range(len(data_df.index)):
-        tmp_df = data_df.loc[i:win+i-1]
+    for col in dat_col_list:
+        new_col = '{0}_win{1}'.format(col, win_size)
 
-        for col in col_list:
-            new_col = '{0}_win{1}'.format(col, win)
-
-            data_df.loc[i+((win+1)/2), new_col] = tmp_df.mean()[col]
+        for i in range(len(data_df.index)):
+            tmp_df = data_df.loc[i:win_size+i-1]
+            data_df.loc[i+((win_size+1)/2), new_col] = tmp_df[col].mean()
 
 def step(df, step):
     index = [i for i in range(len(df.index)) if i % step == 0]
