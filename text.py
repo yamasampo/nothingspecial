@@ -1,12 +1,9 @@
-import os
-import sys
-import re
+import os, sys, re, pickle
 import pandas as pd
-import pickle
 from myBasic import num
 
-__version__ = '1.3'
-__updated__ = '180406'
+__version__ = '1.4'
+__updated__ = '180523'
 __author__ = 'Haruka Yamashita'
 
 def fasta_parser(fasta_path):
@@ -247,3 +244,9 @@ def pkg_version(pkg):
     for dist in pkg_resources.working_set:
         if dist.project_name == pkg:
             print(dist.project_name, dist.version)
+
+def get_last_dir_name(path):
+    if os.path.basename(path) == '':
+        get_last_dir_name(path[:-1])
+    else:
+        return os.path.basename(path)
