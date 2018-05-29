@@ -4,8 +4,8 @@ import pandas as pd
 from collections import Counter
 import numpy as np
 
-__version__ = '2.2'
-__updated__ = '180522'
+__version__ = '2.3'
+__updated__ = '180529'
 __author__ = 'Haruka Yamashita'
 
 def slide_window(data_df, win_size, dat_col_list):
@@ -248,3 +248,7 @@ def bootstrap_df2(df, bin_col, data_col, rep_num, ci=95):
                  'ci_{}'.format(100-ci), 'median','ci_{}'.format(ci)]
     )
     return stat_df
+
+def myround(a, ndigits=2):
+    n = 10 ** ndigits
+    return (a * n * 2 + 1) // 2 / n
