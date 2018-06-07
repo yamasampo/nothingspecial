@@ -1,9 +1,9 @@
 import numpy as np, matplotlib.pyplot as plt, math
 from scipy import stats
-from myBasic import num
+# from myBasic import num
 
-__version__ = '1.0'
-__updated__ = '180606'
+__version__ = '1.1'
+__updated__ = '180607'
 __author__ = 'Haruka Yamashita'
 
 sample1 = np.array([104, 109, 112, 114, 116, 118, 118, 119, 121, 123, 125, 126, 126, 128, 128, 128])
@@ -86,8 +86,8 @@ def maxdist(cfd1, cfd2):
     return max(abs(cfd_diff))
 
 ### Functions to summarize simulation data ###
-def bin_num(data_size):
-    return int(num.myround(1 + math.log2(data_size), 0))
+# def bin_num(data_size):
+#     return int(num.myround(1 + math.log2(data_size), 0))
 
 def show_d_prob_dist(d_dist):
     # calculate relative frequencies
@@ -116,8 +116,20 @@ if __name__ == '__main__':
     import sys
     rep_num = int(sys.argv[1])
     with_replace = bool(sys.argv[2])
-    out_file = sys.argv[3]
-    d_dist = simulate_D_dist_under_null(data1=sample1, data2=sample2, rep_num=rep_num, with_replace=with_replace)
+    in_file = sys.argv[3]
+    # parse input data
+    data1, data2 = [], []
+    with open(in_file, 'r') as f:
+        for i, l in enumerate(f):
+            if i == 0:
+                data1 = np.array([int(a) for a in l[:-1].split(',')])
+            elif i == 1:
+                data2 = np.array([int(a) for a in l[:-1].split(',')])
+    print('Input file:\t', in_file)
+    print('\tdata 1:\t', data1)
+    print('\tdata 2:\t', data2)
+    out_file = sys.argv[4]
+    d_dist = simulate_D_dist_under_null(data1=data1, data2=data2, rep_num=rep_num, with_replace=with_replace)
     with open(out_file, 'a') as f:
         d_dist = [str(a) for a in d_dist]
         print(','.join(d_dist), file=f, flush=True)
