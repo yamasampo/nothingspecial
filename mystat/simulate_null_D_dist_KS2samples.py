@@ -1,9 +1,9 @@
 import numpy as np, matplotlib.pyplot as plt, math
 from scipy import stats
-# from myBasic import num
+from myBasic import num
 
-__version__ = '1.1'
-__updated__ = '180607'
+__version__ = '1.2'
+__updated__ = '180611'
 __author__ = 'Haruka Yamashita'
 
 sample1 = np.array([104, 109, 112, 114, 116, 118, 118, 119, 121, 123, 125, 126, 126, 128, 128, 128])
@@ -41,7 +41,7 @@ def permutation(data):
 
 def data2maxdist(data1, data2, show_fig=False):
     # compute frequency distribution
-    data_size, fd1, fd2 = freq_dist_2samples(list(data1), list(data2))
+    data_range, fd1, fd2 = freq_dist_2samples(list(data1), list(data2))
     # compute relative cumulative frequency distribution
     rcfd1, rcfd2 = relative_cfd(cfd(fd1), len(data1)), relative_cfd(cfd(fd2), len(data2))
     # compute statistic D
@@ -49,8 +49,8 @@ def data2maxdist(data1, data2, show_fig=False):
     if show_fig:
         # show cumulative frequency distribution
         plt.style.use('default')
-        plt.plot(data_range, relcfd1)
-        plt.plot(data_range, relcfd2)
+        plt.plot(data_range, rcfd1)
+        plt.plot(data_range, rcfd2)
         plt.title('Relative cumulative frequency distribution')
         plt.xlabel('Data')
         plt.show()
@@ -86,8 +86,8 @@ def maxdist(cfd1, cfd2):
     return max(abs(cfd_diff))
 
 ### Functions to summarize simulation data ###
-# def bin_num(data_size):
-#     return int(num.myround(1 + math.log2(data_size), 0))
+def bin_num(data_size):
+    return int(num.myround(1 + math.log2(data_size), 0))
 
 def show_d_prob_dist(d_dist):
     # calculate relative frequencies
@@ -106,11 +106,39 @@ def show_d_prob_dist(d_dist):
     plt.close()
     return x, res
 
-def critical_D_value(p, null_d, null_d_freq):
-    # numulative frequency distribution of D statistic
-    null_d_cfd = np.array(cfd(null_d_freq))
-    ind1 = np.where(null_d_cfd <= 1-p)[0][-1]
-    return null_d[ind1], 1- null_d_cfd[ind1]
+def ks_pvalue(d, n1, n2):
+    return stats.kstwobign.sf(ks_z(d, ne(n1, n2)))
+
+def pks(z):
+    if z < 0:
+        raise Exception('bad z')
+    elif z == 0:
+        return 0
+    elif z < 1.18:
+        y = math.exp(-1.23370055013616983/(z**2)) # 1.23370055013616983 = pi**2 / 8
+        return 2.25675833419102515 * math.sqrt(-math.log(y)) * (y + pow(y, 9) + pow(y, 25) + pow(y, 49)) # 2.25675833419102515 = 4/math.sqrt(math.pi)
+
+def qks(z):
+    '''Returns p-value for a given statistic z. This function is almost equivalent with scipy.stats.kstwobign.sf() function.
+    Reference
+    ---------
+        Press, W.H. et al. 2007, Numerical Recipes, section 14.3
+    '''
+    if z < 0:
+        raise Exception('bad z')
+    elif z == 0:
+        return 1
+    elif z < 1.18:
+        return 1 - pks(z)
+    else:
+        x = math.exp(-2*z**2)
+        return 2 * (x-pow(x, 4)+pow(x, 9))
+
+def ks_z(d, ne):
+    return (math.sqrt(ne) + 0.12 + 0.11/math.sqrt(ne))*d
+
+def ne(n1, n2):
+    return n1*n2 / (n1 + n2)
 
 if __name__ == '__main__':
     import sys
