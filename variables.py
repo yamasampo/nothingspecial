@@ -1,8 +1,9 @@
 import pandas as pd
 import os
+from myBasic import num
 
-__version__ = '1.3'
-__updated__ = '180502'
+__version__ = '1.4'
+__updated__ = '180612'
 __author__ = 'Haruka Yamashita'
 
 chr_name_dict_all = {
@@ -57,21 +58,43 @@ ws_mutation_group = {
     }
 }
 
-mutation_compare_set = {
-    'AG': ['GA', 'AG'],
-    'TC': ['CT', 'TC'],
-    'AC': ['CA', 'AC'],
-    'TG': ['GT', 'TG'],
-    'GC': ['GC', 'CG'],
-    'AT': ['AT', 'TA'],
-    'WS': ['SW', 'WS'],
-    'SS': ['WW', 'SS']
-}
+class MutationCompSet(object):
+    def __init__(self):
+        self.comp_dict = {
+            'AG': ['GA', 'AG'],
+            'TC': ['CT', 'TC'],
+            'AC': ['CA', 'AC'],
+            'TG': ['GT', 'TG'],
+            'GC': ['GC', 'CG'],
+            'AT': ['AT', 'TA'],
+            'WS': ['SW', 'WS'],
+            'SS': ['WW', 'SS']
+        }
+    def get_key_mut(self, mutation):
+        if mutation == 'GA' or mutation == 'AG':
+            return 'AG'
+        elif mutation == 'CT' or mutation == 'TC':
+            return 'TC'
+        elif mutation == 'CA' or mutation == 'AC':
+            return 'AC'
+        elif mutation == 'GT' or mutation == 'TG':
+            return 'TG'
+        elif mutation == 'CG' or mutation == 'GC':
+            return 'GC'
+        elif mutation == 'TA' or mutation == 'AT':
+            return 'AT'
+        elif mutation == 'SW' or mutation == 'WS':
+            return 'WS'
+        elif mutation == 'WW' or mutation == 'SS':
+            return 'SS'
+
+    def __repr__(self):
+        return str(self.comp_dict)
 
 class GeneticCode(object):
     def __init__(self):
-        self.__version__ = '1.0'
-        self.__updated__ = '180611'
+        self.__version__ = '1.1'
+        self.__updated__ = '180612'
         self.__author__ = 'Haruka Yamashita'
         self.csv_path = '/Volumes/1TB_4TB_GG/Dropbox/Documents_DB/01_Projects/1_Data_Analysis/_data/genetic_code_coddig_aadig_180611.csv'
         self.bases = ['T', 'C', 'A', 'G']
@@ -85,6 +108,29 @@ class GeneticCode(object):
 
     def codon(self, coddig):
         return num.search_items_df(self.table, coddig=coddig).iloc[0]['codon']
+
+    def codons(self, **kwargs):
+        return num.search_items_df(self.table, **kwargs)['codon'].tolist()
+
+    def filter_table(self, by, **kwargs):
+        kwargs[by] = 1
+        return num.search_items_df(self.table, **kwargs)
+
+    def get_2f_mutation(self, cod_type, out='key', **kwargs):
+        # filter table by codon type (2f20cD, 2f10, ...)
+        table = self.filter_table(by=cod_type)
+        # get a list of codons
+        codons = num.search_items_df(table, **kwargs)['codon'].tolist()
+        # synonymous site mutation
+        mutation = codons[0][2] + codons[1][2]
+        # search a key of mutation comparison set
+        mutcomp = variables.MutationCompSet()
+        key = mutcomp.get_key_mut(mutation)
+        if out=='key':
+            return key
+        elif out=='set':
+            return mutcomp.comp_dict[key]
+
     def __repr__(self):
         return self.table
 
