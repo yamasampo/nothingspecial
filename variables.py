@@ -2,8 +2,8 @@ import pandas as pd
 import os
 from myBasic import num
 
-__version__ = '1.4'
-__updated__ = '180612'
+__version__ = '1.5'
+__updated__ = '180621'
 __author__ = 'Haruka Yamashita'
 
 chr_name_dict_all = {
@@ -124,7 +124,7 @@ class GeneticCode(object):
         # synonymous site mutation
         mutation = codons[0][2] + codons[1][2]
         # search a key of mutation comparison set
-        mutcomp = variables.MutationCompSet()
+        mutcomp = MutationCompSet()
         key = mutcomp.get_key_mut(mutation)
         if out=='key':
             return key
@@ -140,6 +140,78 @@ cds_seq_df_path='/Volumes/1TB_4TB_GG/Dropbox/Documents_DB/01_Projects/011_Progra
 int_seq_df_path = '/Volumes/1TB_4TB_GG/Dropbox/Documents_DB/01_Projects/011_Programming/_data/databases/intron/int_seq_df_m18y22_180330.csv'
 
 mel_site_df_path = '/Volumes/1TB_4TB_GG/Dropbox/Documents_DB/01_Projects/011_Programming/_data/Dmel_ref_info/Dmel_info/site_type_info/site_type_df_180330.csv'
+
+class DB:
+    def __init__(self, df, description=''):
+        self.df = df
+        self.description = description
+
+    def filter(self, **kwargs):
+        '''
+        Search rows which have specifies items from a given dataframe.
+        Please pass key words for searching to **kwargs.
+        For example, if you want to get items that is greater than equal (>=)
+        100 in column "A", please specify **kwargs as "A=gte100". Please see below for details.
+        If nothing passed to **kwargs, return input dataframe.
+        Paramters
+        ---------
+            df: DataFrame (pandas)
+                input dataframe
+            **kwargs:
+                key is for column, value is for filtering values (items)
+                You can use indicators below for filtering way.
+                "gt" for ">"
+                "gte" for ">="
+                "lt" for "<"
+                "lte" for "<="
+                "ne" for "!="
+                "c/" for "contains"
+                "" for "=="
+                If you pass tuple to value, this function search and filter items recursively.
+        '''
+        res_df = self.df
+
+        def f(res_df, k, v):
+            if v == '*':
+                pass
+            elif re.search('^gt\d+', v):
+                v = float(re.search('^gt(\d+\.*\d*)$', v).group(1))
+                res_df = res_df[res_df[k] > v]
+            elif re.search('^gte\d+', v):
+                v = float(re.search('^gte(\d+\.*\d*)$', v).group(1))
+                res_df = res_df[res_df[k] >= v]
+            elif re.search('^lt\d+', v):
+                v = float(re.search('^lt(\d+\.*\d*)$', v).group(1))
+                res_df = res_df[res_df[k] < v]
+            elif re.search('^lte\d+', v):
+                v = float(re.search('lte(\d+\.*\d*)$', v).group(1))
+                res_df = res_df[res_df[k] <= v]
+            elif re.search('^ne\d+', v):
+                v = float(re.search('ne(\d+\.*\d*)$', v).group(1))
+                res_df = res_df[res_df[k] != v]
+            elif re.search('^c\/', v):
+                v = re.search('^c\/(.+)\/$', v).group(1)
+                res_df = res_df[res_df[k].str.contains(v)]
+            else:
+                res_df = res_df[res_df[k] == v]
+            return res_df
+
+        for k,v in kwargs.items():
+            if isinstance(v, tuple):
+                for i in v:
+                    res_df = f(res_df, k, i)
+            elif isinstance(v, str):
+                res_df = f(res_df, k, v)
+            elif isinstance(v, int):
+                res_df = res_df[res_df[k] == v]
+        return res_df
+
+    def __len__(self):
+        return len(self.df.index)
+
+    def __repr__(self):
+        return '<{name}: {desc} ({size} records)>'.format(name=type(self).__name__, desc=self.description,
+                                                          size=self.__len__())
 
 class MelExprData(object):
     def __init__(self):
