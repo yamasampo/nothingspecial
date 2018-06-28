@@ -2,8 +2,8 @@ import pandas as pd
 import os
 from myBasic import num
 
-__version__ = '1.5'
-__updated__ = '180621'
+__version__ = '1.6'
+__updated__ = '180628'
 __author__ = 'Haruka Yamashita'
 
 chr_name_dict_all = {
@@ -61,14 +61,14 @@ ws_mutation_group = {
 class MutationCompSet(object):
     def __init__(self):
         self.comp_dict = {
-            'AG': ['GA', 'AG'],
-            'TC': ['CT', 'TC'],
-            'AC': ['CA', 'AC'],
-            'TG': ['GT', 'TG'],
+            'AG': ['AG', 'GA'],
+            'TC': ['TC', 'CT'],
+            'AC': ['AC', 'CA'],
+            'TG': ['TG', 'GT'],
             'GC': ['GC', 'CG'],
             'AT': ['AT', 'TA'],
-            'WS': ['SW', 'WS'],
-            'SS': ['WW', 'SS']
+            'WS': ['WS', 'SW'],
+            'SS': ['SS', 'WW']
         }
     def get_key_mut(self, mutation):
         if mutation == 'GA' or mutation == 'AG':
@@ -100,25 +100,32 @@ class GeneticCode(object):
         self.bases = ['T', 'C', 'A', 'G']
         self.table = pd.read_csv(self.csv_path)
 
-    def aa1(self, aadig):
-        return num.search_items_df(self.table, aadig=aadig).iloc[0]['aa1']
+    def aadig(self, **kwargs):
+        tmp_df = num.search_items_df(self.table, **kwargs).loc[:, ['aa1', 'aa3', 'aadig']]
+        tmp_df.drop_duplicates(inplace=True)
+        if len(tmp_df.index) != 1:
+            raise Exception('Given keyword arguments cannot specify aa')
+        return tmp_df.iloc[0]['aadig']
 
-    def aa3(self, aadig):
-        return num.search_items_df(self.table, aadig=aadig).iloc[0]['aa3']
+    def aa1(self, dig):
+        return num.search_items_df(self.table, aadig=dig).iloc[0]['aa1']
 
-    def codon(self, coddig):
-        return num.search_items_df(self.table, coddig=coddig).iloc[0]['codon']
+    def aa3(self, dig):
+        return num.search_items_df(self.table, aadig=dig).iloc[0]['aa3']
+
+    def codon(self, dig):
+        return num.search_items_df(self.table, coddig=dig).iloc[0]['codon']
 
     def codons(self, **kwargs):
         return num.search_items_df(self.table, **kwargs)['codon'].tolist()
 
-    def filter_table(self, by, **kwargs):
-        kwargs[by] = 1
+    def filter_table(self, **kwargs):
         return num.search_items_df(self.table, **kwargs)
 
     def get_2f_mutation(self, cod_type, out='key', **kwargs):
         # filter table by codon type (2f20cD, 2f10, ...)
-        table = self.filter_table(by=cod_type)
+        kwargs[cod_type] = 1
+        table = self.filter_table(**kwargs)
         # get a list of codons
         codons = num.search_items_df(table, **kwargs)['codon'].tolist()
         # synonymous site mutation
