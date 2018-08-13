@@ -2,7 +2,7 @@ import numpy as np, matplotlib.pyplot as plt, math
 from scipy import stats
 from myBasic import num
 
-__version__ = '1.0'
+__version__ = '1.1'
 __updated__ = '180611'
 __author__ = 'Haruka Yamashita'
 
@@ -10,9 +10,9 @@ sample1 = np.array([104, 109, 112, 114, 116, 118, 118, 119, 121, 123, 125, 126, 
 sample2 = np.array([100, 105, 107, 107, 108, 111, 116, 120, 121, 123])
 n1, n2 = len(sample1), len(sample2)
 
-def pvalue(sample1, sample2, cfd1=[], cfd2=[], n1=0, n2=0):
-    if cfd1:
-        if cfd2:
+def pvalue(sample1=[], sample2=[], cfd1=[], cfd2=[], n1=0, n2=0):
+    if len(cfd1) > 0:
+        if len(cfd2) > 0:
             d = maxdist(cfd1, cfd2)
     else:
         d = data2maxdist(sample1, sample2, show_fig=False)
@@ -61,7 +61,7 @@ def relative_cfd(cfd, data_size):
 
 def maxdist(cfd1, cfd2):
     '''Returns maximum value of distance between CFDs of two given data'''
-    cfd_diff = cfd1 - cfd2
+    cfd_diff = np.array(cfd1) - np.array(cfd2)
     return max(abs(cfd_diff))
 
 def ks_pvalue(d, n1, n2):
