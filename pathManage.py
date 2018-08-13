@@ -4,18 +4,18 @@ import gzip
 import bz2
 import re
 
-__version__ = '1.0'
+__version__ = '1.1'
 __author__ = 'Haruka Yamashita'
 
 def gen_find_file(filepat, top):
     '''Find all filenames in a directory tree that match a shell wildcard pattern'''
-    for path, dirlist, filelist in os.walk(top):
+    for path, _, filelist in os.walk(top):
         for name in fnmatch.filter(filelist, filepat):
             yield os.path.join(path, name)
 
 def gen_find_dir(filepat, top):
     '''Find all directory names in a directory tree that contain files matching a shell wildcard pattern'''
-    for path, dirlist, filelist in os.walk(top):
+    for path, _, filelist in os.walk(top):
         if len(fnmatch.filter(filelist, filepat)) > 0:
             yield path
 
