@@ -1,8 +1,8 @@
 import pandas as pd
-import os
+import os, re
 from myBasic import num
 
-__version__ = '1.6'
+__version__ = '1.7'
 __updated__ = '180628'
 __author__ = 'Haruka Yamashita'
 
@@ -54,7 +54,8 @@ ws_mutation_group = {
     'mutation':{
         'WS': ['AC', 'AG', 'TC', 'TG'],
         'SW': ['CA', 'CT', 'GA', 'GT'],
-        'WW': ['AT', 'TA'],'SS': ['CG', 'GC']
+        'WW': ['AT', 'TA'],'SS': ['CG', 'GC'],
+        'neu': ['AT', 'TA', 'CG', 'GC']
     }
 }
 
@@ -222,7 +223,7 @@ class DB:
 
 class MelExprData(object):
     def __init__(self):
-        self.path = '/Volumes/1TB_4TB_GG/Dropbox/Documents_DB/01_Projects/011_Programming/_data/Dmel_ref_info/Dmel_expression/tis_tab_m5_ast12_v6f3_pr_PMo_rnk_prt_per_expr b_HY.csv'
+        self.path = '/Volumes/1TB_4TB_GG/Dropbox/Documents_DB/01_Projects/1_Data_Analysis/_data/Dmel_ref_info/Dmel_expression/tis_tab_m5_ast12_v6f3_pr_PMo_rnk_prt_per_expr b_HY.csv'
         self.version = '120904'
         self.tissue_type = {
             't1': 'Ad hindgut',
