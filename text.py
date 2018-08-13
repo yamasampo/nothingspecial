@@ -2,7 +2,7 @@ import os, sys, re, pickle
 import pandas as pd
 from myBasic import num
 
-__version__ = '1.4'
+__version__ = '1.5'
 __updated__ = '180523'
 __author__ = 'Haruka Yamashita'
 
@@ -11,20 +11,17 @@ def fasta_parser(fasta_path):
     # get paths
     dname = os.path.basename(os.path.dirname(fasta_path))
     fname = os.path.basename(fasta_path)
-
     # collect data
     seq_name = ''
-    seq=''
     dname_list = []
     fname_list = []
     seqname_list = []
     seq_list = []
+    tmp_seq = []
 
     with open(fasta_path, 'r') as f:
-        aligned = 0
-
+        # aligned = 0
         for line in f.readlines():
-
             if line.startswith('>'):
                 if seq_name:
                     dname_list.append(dname)
@@ -56,8 +53,7 @@ def fasta_parser(fasta_path):
                           'seq']]
 
 def fastq_parser(fastq_path):
-    '''
-    Returns a DataFrame(pandas) object.
+    '''Returns a DataFrame(pandas) object.
     fastq_parser assumes that a sequence has 4 lines and there is no empty line.
     '''
     name_list = []
@@ -170,8 +166,7 @@ def get_file_list(path, avoid='itemnum', prefix='', sufix=''):
             else:
                 fname = line.rstrip()
             flist.append(fname)
-
-    print('{0} items in {1}'.format(len(flist), path))
+    # print('{0} items in {1}'.format(len(flist), path))
     return flist
 
 def match_2lists(query_list, ref_list, unmatch=False):
