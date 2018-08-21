@@ -1,9 +1,9 @@
 import pandas as pd
-import os, re
-from myBasic import num
+import os, re, pickle, glob
+from myBasic import num, pathManage
+from collections.abc import Mapping
 
-__version__ = '1.7'
-__updated__ = '180628'
+__version__ = '1.8'
 __author__ = 'Haruka Yamashita'
 
 chr_name_dict_all = {
@@ -149,12 +149,12 @@ int_seq_df_path = '/Volumes/1TB_4TB_GG/Dropbox/Documents_DB/01_Projects/011_Prog
 
 mel_site_df_path = '/Volumes/1TB_4TB_GG/Dropbox/Documents_DB/01_Projects/011_Programming/_data/Dmel_ref_info/Dmel_info/site_type_info/site_type_df_180330.csv'
 
-class DB:
+class Database(Mapping):
     def __init__(self, df, description=''):
         self.df = df
         self.description = description
-
-    def filter(self, **kwargs):
+        
+    def filter(self, sort_by='', ascending=True, **kwargs):
         '''
         Search rows which have specifies items from a given dataframe.
         Please pass key words for searching to **kwargs.
@@ -178,7 +178,6 @@ class DB:
                 If you pass tuple to value, this function search and filter items recursively.
         '''
         res_df = self.df
-
         def f(res_df, k, v):
             if v == '*':
                 pass
@@ -212,14 +211,47 @@ class DB:
                 res_df = f(res_df, k, v)
             elif isinstance(v, int):
                 res_df = res_df[res_df[k] == v]
+        if sort_by:
+            res_df.sort_values(by=sort_by, ascending=ascending, inplace=True)
+            
         return res_df
-
+    
     def __len__(self):
         return len(self.df.index)
-
+    
+    def __iter__(self):
+        return self.df.iterrows()
+    
+    def __getitem__(self, key):
+        if key == '*':
+            return self.df
+        elif isinstance(key, int):
+            return self.df.loc[key, :]
+        elif isinstance(key, (tuple, list)):
+            for k in key:
+                yield self.df.loc[k, :]
+    
     def __repr__(self):
-        return '<{name}: {desc} ({size} records)>'.format(name=type(self).__name__, desc=self.description,
-                                                          size=self.__len__())
+        return '<{name}: {desc} ({size} records)>'.format(
+            name=type(self).__name__, desc=self.description, size=self.__len__()
+        )
+
+class SFSDirMap(Database):
+    '''This class inherits Database class. This is for pointing directories locating 
+    at different branches withing folder tree but having same attributes 
+    (ex. species, AA type, aadig).'''
+    
+    def __init__(self, df, path_dict, description=''):
+        self.df = df
+        self._d = path_dict
+        self.description = description
+    
+    def path(self, sort_by='', ascending=True, **kwargs):
+        res_df = self.filter(sort_by, ascending, **kwargs)
+        id_list = list(res_df.index)
+        
+        for i in id_list:
+            yield i, self._d[i]
 
 class MelExprData(object):
     def __init__(self):
