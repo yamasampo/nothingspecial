@@ -3,7 +3,7 @@ import os, re, pickle, glob
 from myBasic import num, pathManage
 from collections.abc import Mapping
 
-__version__ = '1.8'
+__version__ = '1.9'
 __author__ = 'Haruka Yamashita'
 
 chr_name_dict_all = {
@@ -225,11 +225,11 @@ class Database(Mapping):
     def __getitem__(self, key):
         if key == '*':
             return self.df
-        elif isinstance(key, int):
+        else:
             return self.df.loc[key, :]
-        elif isinstance(key, (tuple, list)):
-            for k in key:
-                yield self.df.loc[k, :]
+        # elif isinstance(key, (tuple, list)):
+        #     for k in key:
+        #         yield self.df.loc[k, :]
     
     def __repr__(self):
         return '<{name}: {desc} ({size} records)>'.format(
