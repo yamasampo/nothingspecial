@@ -1,13 +1,24 @@
 import numpy as np, matplotlib.pyplot as plt, math
 import warnings
 from collections import namedtuple
-from scipy.stats import distributions, rankdata
+from scipy.stats import distributions, rankdata, mannwhitneyu
 from myBasic import num
 
-__version__ = '1.1'
+__version__ = '1.2'
 __author__ = 'Haruka Yamashita'
 
 __all__ = ['ks_2samp_test']
+
+def fd2data(x, fd, scaler=1):
+    data = []
+    fd = [num.myround(a, 0) for a in scaler * np.array(fd)]
+    for i, d in enumerate(x):
+        for _ in range(int(fd[i])):
+            data.append(d)
+    if len(data) != sum(fd):
+        print(len(data), sum(fd))
+        raise Exception('')
+    return data
 
 Ks_2sampResult = namedtuple('Ks_2sampResult', ('statistic', 'pvalue'))
 
@@ -135,7 +146,8 @@ def brunnermunzel(x, y, alternative="two-sided", distribution="t",
     ny = len(y)
     if nx == 0 or ny == 0:
         return BrunnerMunzelResult(np.nan, np.nan)
-    rankc = rankdata(np.concatenate((x, y)))
+    rankc = rankdata(np.concatenate((x, y))) # rank all values
+    # get the x- and y-ranks
     rankcx = rankc[0:nx]
     rankcy = rankc[nx:nx+ny]
     rankcx_mean = np.mean(rankcx)
@@ -176,3 +188,77 @@ def brunnermunzel(x, y, alternative="two-sided", distribution="t",
             "alternative should be 'less', 'greater' or 'two-sided'")
 
     return BrunnerMunzelResult(wbfn, p)
+
+def brunnermunzel_scale(x1, x2, scaler, alternative="two-sided", distribution="t",
+                        nan_policy='propagate'):
+    n1 = len(x1)
+    n2 = len(x2)
+    if n1 == 0 or n2 == 0:
+        return BrunnerMunzelResult(np.nan, np.nan)
+    rankc = rankdata(np.concatenate((x1, x2))) # rank all values
+    # get the x- and y-ranks
+    rankcx = rankc[0:n1]
+    rankcy = rankc[n1:n1+n2]
+    rankcx_mean = np.mean(rankcx)
+    rankcy_mean = np.mean(rankcy)
+    rankx = rankdata(x1)
+    ranky = rankdata(x2)
+    rankx_mean = np.mean(rankx)
+    ranky_mean = np.mean(ranky)
+
+    Sx = np.sum(np.power(rankcx - rankx - rankcx_mean + rankx_mean, 2.0))
+    Sx /= n1 - 1
+    Sy = np.sum(np.power(rankcy - ranky - rankcy_mean + ranky_mean, 2.0))
+    Sy /= n2 - 1
+
+    scaled_wbfn = n1 * n2 * (rankcy_mean - rankcx_mean)
+    scaled_wbfn /= (n1 + n2) * np.sqrt(n1 * Sx + n2 * Sy)
+
+    wbfn = scaled_wbfn / np.sqrt(scaler)
+
+    if distribution == "t":
+        df_numer = np.power(n1 * Sx + n2 * Sy, 2.0)
+        df_denom = np.power(n1 * Sx, 2.0) / (n1 - 1)
+        df_denom += np.power(n2 * Sy, 2.0) / (n2 - 1)
+        df = df_numer / df_denom
+        p = distributions.t.cdf(wbfn, df)
+    elif distribution == "normal":
+        p = distributions.norm.cdf(wbfn)
+    else:
+        raise ValueError(
+            "distribution should be 't' or 'normal'")
+
+    if alternative == "greater":
+        p = p
+    elif alternative == "less":
+        p = 1 - p
+    elif alternative == "two-sided":
+        p = 2 * np.min([p, 1-p])
+    else:
+        raise ValueError(
+            "alternative should be 'less', 'greater' or 'two-sided'")
+
+    return BrunnerMunzelResult(wbfn, p)
+
+def mwu_U2z(u, n1, n2): 
+    mu = (n1*n2)/2
+    su = np.sqrt((n1*n2*(n1+n2+1))/12)
+    return (u - mu)/su
+
+MannwhitneyuResult = namedtuple('MannwhitneyuResult', ('u_prime', 'z', 'pvalue'))
+
+def mannwhitneyu_scale(x1, x2, scaler, alternative='two-sided', use_continuity=True):
+    mwu_sc_res = mannwhitneyu(x1, x2, use_continuity, alternative)
+    n1, n2 = len(x1), len(x2)
+    sc_z = mwu_U2z(mwu_sc_res.statistic, n1, n2)
+    z = sc_z / np.sqrt(scaler)
+    if alternative is None:
+        # This behavior, equal to half the size of the two-sided
+        # p-value, is deprecated.
+        p = distributions.norm.sf(abs(z))
+    elif alternative == 'two-sided':
+        p = 2 * distributions.norm.sf(abs(z))
+    else:
+        p = distributions.norm.sf(z)
+
+    return MannwhitneyuResult(mwu_sc_res.statistic, z, p)
