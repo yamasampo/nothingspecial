@@ -177,6 +177,9 @@ class Database(Mapping):
                 elif re.search('^c\/', v):
                     v = re.search('^c\/(.+)\/$', v).group(1)
                     res_df = res_df[res_df[k].str.contains(v)]
+                elif re.search('^nc\/', v):
+                    v = re.search('^nc\/(.+)\/$', v).group(1)
+                    res_df = res_df[~res_df[k].str.contains(v)]
                 else:
                     res_df = res_df[res_df[k] == v]
             else:
@@ -184,9 +187,11 @@ class Database(Mapping):
             return res_df
 
         for k,v in kwargs.items():
-            if isinstance(v, tuple):
+            if isinstance(v, (tuple, list)):
+                res_df_list = []
                 for i in v:
-                    res_df = f(res_df, k, i)
+                    res_df_list.append(f(res_df, k, i))
+                res_df = pd.concat(res_df_list)
             elif isinstance(v, str):
                 res_df = f(res_df, k, v)
             elif isinstance(v, int):
@@ -232,6 +237,29 @@ class SFSDirMap(Database):
         
         for i in id_list:
             yield i, self._d[i]
+
+def get_SFSDirMap(filepat, top, description=''):
+    i = 0
+    dir_dict = {}
+    tmp_df = None
+
+    for sfs_dir in pathManage.gen_find_dir(filepat, top):
+        i += 1
+        dir_dict[i] = sfs_dir
+
+        info_path = glob.glob(os.path.join(sfs_dir, 'data', '*_info.pickle'))[0]
+        with open(info_path, 'rb') as f:
+            info = pickle.load(f)
+
+        key, value = zip(*sorted(info.items(), key=lambda x: x[0]))
+        if i == 1:
+            tmp_df = pd.DataFrame(columns=[], index=key)
+        tmp_df[i] = list(value)
+    
+    info_df = tmp_df.T
+    dirmap = SFSDirMap(info_df, dir_dict, description)
+    return dirmap
+    
 
 class MelExprData(object):
     def __init__(self):
