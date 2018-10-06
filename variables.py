@@ -187,9 +187,11 @@ class Database(Mapping):
             return res_df
 
         for k,v in kwargs.items():
-            if isinstance(v, tuple):
+            if isinstance(v, (tuple, list)):
+                res_df_list = []
                 for i in v:
-                    res_df = f(res_df, k, i)
+                    res_df_list.append(f(res_df, k, i))
+                res_df = pd.concat(res_df_list)
             elif isinstance(v, str):
                 res_df = f(res_df, k, v)
             elif isinstance(v, int):
