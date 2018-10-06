@@ -3,7 +3,7 @@ import os, re, pickle, glob
 from myBasic import num, pathManage
 from collections.abc import Mapping
 
-__version__ = '1.9'
+__version__ = '2.0'
 __author__ = 'Haruka Yamashita'
 
 chr_name_dict_all = {
@@ -34,29 +34,6 @@ chr_name_dict_auto = {
     '11': '2LHet',
     '12': '3LHet',
     '13': '3RHet',
-}
-
-mel_freq_group = {
-    'frequency':{
-        1: [1], 2: [2], 3: [3], 4:[4, 5], 5:[6, 7],
-        6: [8, 9, 10], 7: [11, 12, 13], 8: [14]
-    }
-}
-
-sim_freq_group = {
-    'frequency':{
-        1: [1], 2: [2], 3: [3], 4: [4, 5], 5: [6, 7], 6: [8, 9, 10],
-        7: [11, 12, 13, 14], 8: [15, 16, 17, 18, 19, 20], 9:[21]
-    }
-}
-
-ws_mutation_group = {
-    'mutation':{
-        'WS': ['AC', 'AG', 'TC', 'TG'],
-        'SW': ['CA', 'CT', 'GA', 'GT'],
-        'WW': ['AT', 'TA'],'SS': ['CG', 'GC'],
-        'neu': ['AT', 'TA', 'CG', 'GC']
-    }
 }
 
 class MutationCompSet(object):
@@ -179,26 +156,29 @@ class Database(Mapping):
         '''
         res_df = self.df
         def f(res_df, k, v):
-            if v == '*':
-                pass
-            elif re.search('^gt\d+', v):
-                v = float(re.search('^gt(\d+\.*\d*)$', v).group(1))
-                res_df = res_df[res_df[k] > v]
-            elif re.search('^gte\d+', v):
-                v = float(re.search('^gte(\d+\.*\d*)$', v).group(1))
-                res_df = res_df[res_df[k] >= v]
-            elif re.search('^lt\d+', v):
-                v = float(re.search('^lt(\d+\.*\d*)$', v).group(1))
-                res_df = res_df[res_df[k] < v]
-            elif re.search('^lte\d+', v):
-                v = float(re.search('lte(\d+\.*\d*)$', v).group(1))
-                res_df = res_df[res_df[k] <= v]
-            elif re.search('^ne\d+', v):
-                v = float(re.search('ne(\d+\.*\d*)$', v).group(1))
-                res_df = res_df[res_df[k] != v]
-            elif re.search('^c\/', v):
-                v = re.search('^c\/(.+)\/$', v).group(1)
-                res_df = res_df[res_df[k].str.contains(v)]
+            if isinstance(v, str):
+                if v == '*':
+                    pass
+                elif re.search('^gt\d+', v):
+                    v = float(re.search('^gt(\d+\.*\d*)$', v).group(1))
+                    res_df = res_df[res_df[k] > v]
+                elif re.search('^gte\d+', v):
+                    v = float(re.search('^gte(\d+\.*\d*)$', v).group(1))
+                    res_df = res_df[res_df[k] >= v]
+                elif re.search('^lt\d+', v):
+                    v = float(re.search('^lt(\d+\.*\d*)$', v).group(1))
+                    res_df = res_df[res_df[k] < v]
+                elif re.search('^lte\d+', v):
+                    v = float(re.search('lte(\d+\.*\d*)$', v).group(1))
+                    res_df = res_df[res_df[k] <= v]
+                elif re.search('^ne\d+', v):
+                    v = float(re.search('ne(\d+\.*\d*)$', v).group(1))
+                    res_df = res_df[res_df[k] != v]
+                elif re.search('^c\/', v):
+                    v = re.search('^c\/(.+)\/$', v).group(1)
+                    res_df = res_df[res_df[k].str.contains(v)]
+                else:
+                    res_df = res_df[res_df[k] == v]
             else:
                 res_df = res_df[res_df[k] == v]
             return res_df
@@ -241,12 +221,12 @@ class SFSDirMap(Database):
     at different branches withing folder tree but having same attributes 
     (ex. species, AA type, aadig).'''
     
-    def __init__(self, df, path_dict, description=''):
-        self.df = df
-        self._d = path_dict
+    def __init__(self, info_df, sfs_dir_dict, description=''):
+        self.df = info_df
+        self._d = sfs_dir_dict
         self.description = description
     
-    def path(self, sort_by='', ascending=True, **kwargs):
+    def gen_sfs_dir(self, sort_by='', ascending=True, **kwargs):
         res_df = self.filter(sort_by, ascending, **kwargs)
         id_list = list(res_df.index)
         
