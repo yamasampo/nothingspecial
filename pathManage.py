@@ -14,7 +14,9 @@ def gen_find_file(filepat, top):
             yield os.path.join(path, name)
 
 def gen_find_dir(filepat, top):
-    '''Find all directory names in a directory tree that contain files matching a shell wildcard pattern'''
+    """ Obtain all directory names in a directory tree that contain files 
+    matching to a shell wildcard pattern. This function allows you to process
+    linearly through directories in tree structured file organization. """
     for path, _, filelist in os.walk(top):
         if len(fnmatch.filter(filelist, filepat)) > 0:
             yield path
