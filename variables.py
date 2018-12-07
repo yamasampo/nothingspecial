@@ -226,9 +226,8 @@ class SFSDirMap(Database):
     at different branches withing folder tree but having same attributes 
     (ex. species, AA type, aadig).'''
     
-    def __init__(self, info_df, sfs_dir_dict, description=''):
-        self.df = info_df
-        self._d = sfs_dir_dict
+    def __init__(self, filepat, top, description=''):
+        self.df, self._d = self.get_SFSDirMap(filepat, top)
         self.description = description
     
     def gen_sfs_dir(self, sort_by='', ascending=True, **kwargs):
@@ -238,28 +237,26 @@ class SFSDirMap(Database):
         for i in id_list:
             yield i, self._d[i]
 
-def get_SFSDirMap(filepat, top, description=''):
-    i = 0
-    dir_dict = {}
-    tmp_df = None
+    def get_SFSDirMap(self, filepat, top, description=''):
+        i = 0
+        dir_dict = {}
+        tmp_df = None
 
-    for sfs_dir in pathManage.gen_find_dir(filepat, top):
-        i += 1
-        dir_dict[i] = sfs_dir
+        for sfs_dir in pathManage.gen_find_dir(filepat, top):
+            i += 1
+            dir_dict[i] = sfs_dir
 
-        info_path = glob.glob(os.path.join(sfs_dir, 'data', '*_info.pickle'))[0]
-        with open(info_path, 'rb') as f:
-            info = pickle.load(f)
+            info_path = glob.glob(os.path.join(sfs_dir, 'data', '*_info.pickle'))[0]
+            with open(info_path, 'rb') as f:
+                info = pickle.load(f)
 
-        key, value = zip(*sorted(info.items(), key=lambda x: x[0]))
-        if i == 1:
-            tmp_df = pd.DataFrame(columns=[], index=key)
-        tmp_df[i] = list(value)
-    
-    info_df = tmp_df.T
-    dirmap = SFSDirMap(info_df, dir_dict, description)
-    return dirmap
-    
+            key, value = zip(*sorted(info.items(), key=lambda x: x[0]))
+            if i == 1:
+                tmp_df = pd.DataFrame(columns=[], index=key)
+            tmp_df[i] = list(value)
+        
+        info_df = tmp_df.T
+        return info_df, dir_dict
 
 class MelExprData(object):
     def __init__(self):
