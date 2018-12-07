@@ -10,6 +10,30 @@ __author__ = 'Haruka Yamashita'
 __all__ = ['ks_2samp_test']
 
 def fd2data(x, fd, scaler=1):
+    """ Regenerate data from given frequency distributions for given data. You 
+    can change scale of sample size from "scaler" option.
+
+    Parameters
+    ----------
+    x: list
+        A list of sample data. Data can be numeric and/or string but have to be
+        categorical data.
+    fd: list
+        A list of sample frequency distributions.
+    scaler: int (optional)
+        Scale of sample size. If it is set to 100, each frequency will be 
+        multiplied by 100.
+
+    Assumption
+    ----------
+        Frequency of x have to be found in the same place in fd.
+    
+    Dependencies
+    ------------
+    numpy
+    round function
+
+    """
     data = []
     fd = [num.myround(a, 0) for a in scaler * np.array(fd)]
     for i, d in enumerate(x):
