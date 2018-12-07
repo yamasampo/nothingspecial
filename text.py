@@ -2,9 +2,49 @@ import os, sys, re, pickle
 import pandas as pd
 from myBasic import num
 
-__version__ = '1.5'
-__updated__ = '180523'
 __author__ = 'Haruka Yamashita'
+
+def parse_fasta(fasta_path):
+    '''Parse a FASTA file and return a dictionary'''
+    
+    fasta = {}
+    seq_name = ''
+    tmp_seq = []
+    
+    with open(fasta_path, 'r') as f:
+        for l in f:
+            if l.startswith('>'):
+                if seq_name:
+                    fasta[seq_name] = ''.join(tmp_seq)
+                    seq_name = ''
+                    tmp_seq = []
+                seq_name = l[1:-1]
+                
+            else:
+                tmp_seq.append(l[:-1])
+    if seq_name:
+        fasta[seq_name] = ''.join(tmp_seq)
+        
+    return fasta
+
+def to_fasta(fasta, out_path):
+    '''Save fasta object as a FASTA file'''
+    with open(out_path, 'w') as f:
+        for seq_name, seq in fasta.items():
+            print('>' + seq_name, file=f)
+            print(seq, file=f)
+
+def parse_fasta_in_dir(dir_path, filelist_name='0.filelist'):
+    '''Parse Fasta files in a given directory'''
+    flist = text.get_file_list(path=os.path.join(dir_path, filelist_name))
+    fasta_dict = {}
+    
+    for file_name in flist:
+        fasta_path = os.path.join(dir_path, file_name)
+        fasta = parse_fasta(fasta_path)
+        fasta_dict[file_name] = fasta
+        
+    return fasta_dict
 
 def fasta_parser(fasta_path):
     ## dataframe for mfa database
@@ -120,7 +160,7 @@ def to_fastq(fastq, file_name):
         print(' Written in {}'.format(file_name))
 
 def to_filelist(dir_path):
-
+    '''Return a file list in a given directory'''
     l1 = os.listdir(dir_path)
     l2= [a for a in l1 if not a.startswith('.')]
     flist = [a for a in l2 if not a.startswith('0')]
@@ -128,7 +168,7 @@ def to_filelist(dir_path):
     with open(os.path.join(dir_path, '0.filelist'), 'w') as f:
         print('itemnum: '+str(len(flist)), file=f)
         print('\n'.join(flist), file=f)
-
+    return flist
 
 def get_file_list(path, avoid='itemnum', prefix='', sufix=''):
     '''
@@ -210,10 +250,9 @@ def get_key_by_value(dict, value):
         if v == value:
             return k
 
-def read_big_pickle(pickle_path):
+def read_big_pickle(pickle_path, max_bytes=2**31-1):
 
     bytes_in = bytearray(0)
-    max_bytes = 2**31 - 1
     input_size = os.path.getsize(pickle_path)
 
     with open(pickle_path, 'rb') as f_in:
