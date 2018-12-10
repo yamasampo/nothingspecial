@@ -201,6 +201,9 @@ class Database(Mapping):
             
         return res_df
     
+    def head(self):
+        return self.df.head()
+
     def __len__(self):
         return len(self.df.index)
     
