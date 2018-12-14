@@ -284,3 +284,37 @@ def get_last_dir_name(path):
         get_last_dir_name(path[:-1])
     else:
         return os.path.basename(path)
+
+def parse_HASeqFile(path):
+    item_cnt = 0
+    fasta_dict = {}
+    gene_name = ''
+    cds_len = 0
+
+    with open(path, 'r') as f:
+        for line in f:
+            if re.match(r'\d+$', line[:-1]):
+                continue
+            
+            if line.startswith('/*'):
+                continue
+            
+            if line.startswith('>'):
+                gene_name = line[1:-1]
+                
+            elif line.startswith('cod'):
+                cds_len = int(line[:-1].split(':')[1])
+                
+            elif gene_name != '' and cds_len > 0:
+                if re.match(r'[ATGC]', line):
+                    seq = line.rstrip()[:-1]
+                    assert cds_len == len(seq), gene_name
+                    
+                    fasta_dict[gene_name] = seq
+                    item_cnt += 1
+                    gene_name = ''
+                    cds_len = 0
+
+    assert len(fasta_dict) == item_cnt, 'Incorrect item number'
+    return fasta_dict
+    
