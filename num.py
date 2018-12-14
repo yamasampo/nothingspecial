@@ -147,22 +147,42 @@ def adjust_average(data, average=1000, divisor=None, integer=False):
 
     return out
 
-def bootstrap(data, rep_num):
+def bootstrap(data, rep_num, output='matrix'):
     '''
     Returns a list of means of resampled data.
+
+    Parameters
+    ----------
+    data: list
+        array-like data
+    rep_num: int
+        number of replications. bootstrap will be repeated this number of times.
+    output: str, 'mean' or 'matrix'
+        output info. if mean was specified, only means of bootstrapped data will 
+        be outputted.
+
     '''
-    boot_means = []
+    data = np.array(data)
+    boot_dat = []
+
     for i in range(rep_num):
         index = np.random.choice(len(data), len(data), replace=True)
+        index.sort()
+        if output == 'index':
+            boot_dat.append(index)
+            continue
+
         new_data = data[index]
+        if output == 'mean':
+            boot_dat.append(np.mean(new_data))
+        elif output == 'matrix':
+            boot_dat.append(np.array(new_data))
 
-        boot_means.append(np.mean(new_data))
-
-    if len(boot_means) != rep_num:
+    if len(boot_dat) != rep_num:
         raise Exception('bootstrapped data has excess or lack of data.')
 
-    boot_array = np.array(boot_means)
-    boot_array.sort()
+    boot_array = np.array(boot_dat)
+    # boot_array.sort()
     return boot_array
 
 def median_CIs(data, ci=95):
