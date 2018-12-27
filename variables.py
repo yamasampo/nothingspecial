@@ -127,6 +127,8 @@ int_seq_df_path = '/Volumes/1TB_4TB_GG/Dropbox/Documents_DB/01_Projects/011_Prog
 mel_site_df_path = '/Volumes/1TB_4TB_GG/Dropbox/Documents_DB/01_Projects/011_Programming/_data/Dmel_ref_info/Dmel_info/site_type_info/site_type_df_180330.csv'
 
 class Database(Mapping):
+    """ This class inherits Mapping class. __iter__, __getitem__ and __len__ 
+    functions are overwritten. """
     def __init__(self, df, description=''):
         self.df = df
         self.description = description
@@ -136,7 +138,8 @@ class Database(Mapping):
         Search rows which have specifies items from a given dataframe.
         Please pass key words for searching to **kwargs.
         For example, if you want to get items that is greater than equal (>=)
-        100 in column "A", please specify **kwargs as "A=gte100". Please see below for details.
+        100 in column "A", please specify **kwargs as "A=gte100". 
+        Please see below for details.
         If nothing passed to **kwargs, return input dataframe.
         Paramters
         ---------
@@ -152,7 +155,12 @@ class Database(Mapping):
                 "ne" for "!="
                 "c/" for "contains"
                 "" for "=="
-                If you pass tuple to value, this function search and filter items recursively.
+                If you pass tuple to value, this function search and filter 
+                items recursively.
+        Dependencies
+        ------------
+            pandas
+            re
         '''
         res_df = self.df
         def f(res_df, k, v):
