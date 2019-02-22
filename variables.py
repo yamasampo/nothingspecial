@@ -3,9 +3,6 @@ import os, re, pickle, glob
 from myBasic import num, pathManage
 from collections.abc import Mapping
 
-__version__ = '2.0'
-__author__ = 'Haruka Yamashita'
-
 chr_name_dict_all = {
     '1': 'YHet',
     '2': 'dmel_mitochondrion_genome',
@@ -212,6 +209,9 @@ class Database(Mapping):
     def head(self, *kwargs):
         return self.df.head(*kwargs)
 
+    def tail(self, *kwargs):
+        return self.df.tail(*kwargs)
+
     def __len__(self):
         return len(self.df.index)
     
@@ -268,6 +268,50 @@ class SFSDirMap(Database):
         
         info_df = tmp_df.T
         return info_df, dir_dict
+
+class SeqDB(Database):
+    '''This class inherits Database class. This is for pointing directories locating 
+    at different branches withing folder tree but having same attributes 
+    (ex. species, AA type, aadig).'''
+    
+    def __init__(self, df, seq_path='', description=''):
+        super().__init__(df, description)
+        if seq_path:
+            self._d = self.load_seq(seq_path, format='pickle')
+        else:
+            self._d = {}
+    
+    def gen_seq(self, sort_by='', ascending=True, **kwargs):
+        res_df = self.filter(sort_by, ascending, **kwargs)
+        seq_id_list = res_df['seq_id'].tolist()
+        id_list = list(res_df.index)
+        
+        for i, seq_id in zip(id_list, seq_id_list):
+            yield i, seq_id, self._d[seq_id]
+
+    def to_fasta(fasta_path, seq_name_encoder=None, itemnum=False, 
+                 sort_by='', ascending=True, **kwargs):
+        if not seq_name_encoder:
+            seq_name_encoder = lambda x: str(x['info_id'])
+
+        fasta_lines = []
+        for _, item in enumerate(self.gen_seq(sort_by, ascending, **kwargs)):
+            i, seq_id, seq = item
+            seq_name = seq_name_encoder(self[i])
+            fasta_lines.append('>{}\n{}'.format(seq_name, seq))
+
+        with open(fasta_path, 'w') as f:
+            if itemnum:
+                print('itemnum: {}'.format(len(fasta_lines)), file=f)
+            print('\n'.join(fasta_lines), file=f)
+
+
+    def load_seq(self, seq_path, format='pickle'):
+        if format == 'pickle':
+            with open(seq_path, 'rb') as f:
+                d = pickle.load(f)
+
+        self._d = d
 
 class MelExprData(object):
     def __init__(self):
