@@ -192,11 +192,16 @@ class Database(Mapping):
             return res_df
 
         for k,v in kwargs.items():
-            if isinstance(v, (tuple, list)):
+            if isinstance(v, list): # "or"
                 res_df_list = []
                 for i in v:
                     res_df_list.append(f(res_df, k, i))
                 res_df = pd.concat(res_df_list)
+            if isinstance(v, tuple): # "and"
+                res_df_list = []
+                for i in v:
+                    tmp_res_df = f(res_df, k, i)
+                    res_df = pd.merge(res_df, tmp_res_df, how='inner')
             elif isinstance(v, str):
                 res_df = f(res_df, k, v)
             elif isinstance(v, int):
@@ -277,7 +282,7 @@ class SeqDB(Database):
     def __init__(self, df, seq_path='', description=''):
         super().__init__(df, description)
         if seq_path:
-            self._d = self.load_seq(seq_path, format='pickle')
+            self.load_seq(seq_path, format='pickle')
         else:
             self._d = {}
     
