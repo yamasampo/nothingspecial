@@ -12,7 +12,7 @@ n1, n2 = len(sample1), len(sample2)
 
 def simulate_D_dist_under_null(data1, data2, rep_num, with_replace):
     # 1. Construct null dataset
-    null = np.append(data1, data1)
+    null = np.append(data1, data2)
     d_dist = []
     for i in range(rep_num):
         # 2. Regenerate 2 samples
