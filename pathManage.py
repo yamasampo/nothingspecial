@@ -4,9 +4,6 @@ import gzip
 import bz2
 import re
 
-__version__ = '1.1'
-__author__ = 'Haruka Yamashita'
-
 def gen_find_file(filepat, top):
     '''Find all filenames in a directory tree that match a shell wildcard pattern'''
     for path, _, filelist in os.walk(top):
