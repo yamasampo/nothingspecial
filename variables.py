@@ -237,32 +237,33 @@ class Database(Mapping):
             name=type(self).__name__, desc=self.description, size=self.__len__()
         )
 
-class SFSDirMap(Database):
+class DirMap(Database):
     '''This class inherits Database class. This is for pointing directories locating 
     at different branches withing folder tree but having same attributes 
     (ex. species, AA type, aadig).'''
     
     def __init__(self, filepat, top, description=''):
-        self.df, self._d = self.get_SFSDirMap(filepat, top)
+        self.df, self._d = self.get_DirMap(filepat, top)
         self.description = description
     
-    def gen_sfs_dir(self, sort_by='', ascending=True, **kwargs):
+    def gen_dir(self, sort_by='', ascending=True, **kwargs):
         res_df = self.filter(sort_by, ascending, **kwargs)
         id_list = list(res_df.index)
         
         for i in id_list:
             yield i, self._d[i]
 
-    def get_SFSDirMap(self, filepat, top, description=''):
+    def get_DirMap(self, filepat, top, description=''):
         i = 0
         dir_dict = {}
         tmp_df = None
 
-        for sfs_dir in pathManage.gen_find_dir(filepat, top):
+        for dir_name in pathManage.gen_find_dir(filepat, top):
             i += 1
-            dir_dict[i] = sfs_dir
+            dir_dict[i] = dir_name
 
-            info_path = glob.glob(os.path.join(sfs_dir, 'data', '*_info.pickle'))[0]
+            info_path = glob.glob(
+                os.path.join(dir_name, 'data', '*_info.pickle'))[0]
             with open(info_path, 'rb') as f:
                 info = pickle.load(f)
 

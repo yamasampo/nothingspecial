@@ -2,8 +2,6 @@ import os, sys, re, pickle
 import pandas as pd
 from myBasic import num
 
-__author__ = 'Haruka Yamashita'
-
 def parse_fasta(fasta_path):
     '''Parse a FASTA file and return a dictionary'''
     
