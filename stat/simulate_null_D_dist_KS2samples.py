@@ -1,10 +1,8 @@
-import numpy as np, matplotlib.pyplot as plt, math
+import numpy as np
+import matplotlib.pyplot as plt
+import math
 from scipy import stats
 from myBasic import num
-
-__version__ = '1.2'
-__updated__ = '180611'
-__author__ = 'Haruka Yamashita'
 
 sample1 = np.array([104, 109, 112, 114, 116, 118, 118, 119, 121, 123, 125, 126, 126, 128, 128, 128])
 sample2 = np.array([100, 105, 107, 107, 108, 111, 116, 120, 121, 123])

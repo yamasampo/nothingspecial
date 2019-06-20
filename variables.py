@@ -288,6 +288,18 @@ class SeqDB(Database):
             self._d = {}
     
     def gen_seq(self, sort_by='', ascending=True, **kwargs):
+        """ Generate registered nucleotide sequences. kwargs accepts options 
+        for filtering CDS. 
+        
+        Returns
+        -------
+        i: int
+            index of DataFrame
+        seq_id: int
+            key of sequence dictionary
+        sequence: str
+            nucleotide sequence registered in a dictionary
+        """
         res_df = self.filter(sort_by, ascending, **kwargs)
         seq_id_list = res_df['seq_id'].tolist()
         id_list = list(res_df.index)
