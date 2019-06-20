@@ -2,6 +2,48 @@ import os, sys, re, pickle
 import pandas as pd
 from myBasic import num
 
+def parse_filelist(path, expect_line_start='itemnum: ', avoid=['/*']):
+    ''' Returns a list of file names that are written in a given file.
+    Parameter
+    ---------
+        path: str
+            a path to a file of file name list
+        prefix: str
+            If "prefix" is specified, line starting with prefix will be read.
+        suffix: str
+            If "sufix" is specified, line ending with prefix will be read.
+    Return
+    ------
+        flist: list
+            a list that contains all file names listed in a given file.
+    '''
+    if not expect_line_start:
+        raise Exception('Please input a string to retrieve the expected number of items.')
+
+    flist = []
+    with open(path, 'r') as f:
+        for line in f:
+            if line.startswith(expect_line_start):
+                exp_itemnum = int(line.rstrip().split(expect_line_start)[1])
+                continue
+                
+            # checks if the current line starts with the characters 
+            # which are specified to be avoided.
+            bad = 0
+            for bad_char in avoid:
+                if line.startswith(bad_char):
+                    bad += 1
+            if bad > 0:
+                continue
+            
+            flist.append(line.rstrip())
+
+    itemnum = len(flist)
+    assert itemnum == exp_itemnum, f'The item number is expected to be '\
+        '{}, not {}.'.format(expect_line_start, itemnum)
+
+    return flist
+
 def parse_fasta(fasta_path):
     '''Parse a FASTA file and return a dictionary'''
     
@@ -43,52 +85,6 @@ def parse_fasta_in_dir(dir_path, filelist_name='0.filelist'):
         fasta_dict[file_name] = fasta
         
     return fasta_dict
-
-def fasta_parser(fasta_path):
-    ## dataframe for mfa database
-    # get paths
-    dname = os.path.basename(os.path.dirname(fasta_path))
-    fname = os.path.basename(fasta_path)
-    # collect data
-    seq_name = ''
-    dname_list = []
-    fname_list = []
-    seqname_list = []
-    seq_list = []
-    tmp_seq = []
-
-    with open(fasta_path, 'r') as f:
-        # aligned = 0
-        for line in f.readlines():
-            if line.startswith('>'):
-                if seq_name:
-                    dname_list.append(dname)
-                    fname_list.append(fname)
-                    seqname_list.append(seq_name)
-                    seq_list.append(''.join(tmp_seq))
-
-                seq_name = line[1:-1].split(' ')[0]
-                tmp_seq = []
-            else:
-                tmp_seq.append(line[:-1])
-        if seq_name:
-            dname_list.append(dname)
-            fname_list.append(fname)
-            seqname_list.append(seq_name)
-            seq_list.append(''.join(tmp_seq))
-
-    # create dataframe
-    fasta_df = pd.DataFrame({'dir_name': dname_list,
-                           'file_name': fname_list,
-                           'seqname': seqname_list,
-                           'seq': seq_list
-                           })
-    print('{0} items in {1}.'.format(len(fasta_df.index), fasta_path))
-    # rearrange columns
-    return fasta_df.ix[:,['dir_name',
-                          'file_name',
-                          'seqname',
-                          'seq']]
 
 def fastq_parser(fastq_path):
     '''Returns a DataFrame(pandas) object.
