@@ -2,7 +2,8 @@ import os, sys, re, pickle
 import pandas as pd
 from myBasic import num
 
-def parse_filelist(path, expect_line_start='itemnum: ', avoid=['/*']):
+def parse_filelist(path, expect_line_start='itemnum: ', avoid=['/*'], 
+                   apply_func=None):
     ''' Returns a list of file names that are written in a given file.
     Parameter
     ---------
@@ -20,6 +21,9 @@ def parse_filelist(path, expect_line_start='itemnum: ', avoid=['/*']):
     if not expect_line_start:
         raise Exception('Please input a string to retrieve the expected number of items.')
 
+    if not apply_func:
+        apply_func = lambda x: x
+
     flist = []
     with open(path, 'r') as f:
         for line in f:
@@ -36,7 +40,7 @@ def parse_filelist(path, expect_line_start='itemnum: ', avoid=['/*']):
             if bad > 0:
                 continue
             
-            flist.append(line.rstrip())
+            flist.append(apply_func(line.rstrip()))
 
     itemnum = len(flist)
     assert itemnum == exp_itemnum, f'The item number is expected to be '\
