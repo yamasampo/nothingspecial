@@ -4,11 +4,6 @@ from collections import namedtuple
 from scipy.stats import distributions, rankdata, mannwhitneyu, tiecorrect
 from myBasic import num
 
-__version__ = '1.2'
-__author__ = 'Haruka Yamashita'
-
-__all__ = ['ks_2samp_test']
-
 def fd2data(x, fd, scaler=1):
     """ Regenerate data from given frequency distributions for given data. You 
     can change scale of sample size from "scaler" option.
@@ -333,7 +328,8 @@ def mannwhitneyu(x, y, use_continuity=True, alternative=None):
     T = tiecorrect(ranked)
     
     if T == 0:
-        raise ValueError('All numbers are identical in mannwhitneyu')
+        warnings.warn(
+            'All numbers are identical in mannwhitneyu')
     sd = np.sqrt(T * n1 * n2 * (n1+n2+1) / 12.0)
 
     meanrank = n1*n2/2.0 + 0.5 * use_continuity
