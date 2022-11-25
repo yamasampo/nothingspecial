@@ -4,10 +4,6 @@ import pandas as pd
 from collections import Counter
 import numpy as np
 
-__version__ = '2.3'
-__updated__ = '180529'
-__author__ = 'Haruka Yamashita'
-
 def slide_window(data_df, win_size, dat_col_list):
     '''
     Parameters
