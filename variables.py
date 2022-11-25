@@ -1,37 +1,14 @@
+
+import os
+import re
+import pickle
+import glob
 import pandas as pd
-import os, re, pickle, glob
-from myBasic import num, pathManage
+
 from collections.abc import Mapping
 
-chr_name_dict_all = {
-    '1': 'YHet',
-    '2': 'dmel_mitochondrion_genome',
-    '3': '2L',
-    '4': 'X',
-    '5': '3L',
-    '6': '4',
-    '7': '2R',
-    '8': '3R',
-    '9': 'Uextra',
-    '10': '2RHet',
-    '11': '2LHet',
-    '12': '3LHet',
-    '13': '3RHet',
-    '14': 'U',
-    '15': 'XHet'
-}
-
-chr_name_dict_auto = {
-    '3': '2L',
-    '5': '3L',
-    '6': '4',
-    '7': '2R',
-    '8': '3R',
-    '10': '2RHet',
-    '11': '2LHet',
-    '12': '3LHet',
-    '13': '3RHet',
-}
+from myBasic import num, pathManage
+from myBasic.constants import BASES
 
 class MutationCompSet(object):
     def __init__(self):
@@ -67,19 +44,19 @@ class MutationCompSet(object):
         return str(self.comp_dict)
 
 class GeneticCode(object):
-    def __init__(self):
-        self.__version__ = '1.1'
-        self.__updated__ = '180612'
-        self.__author__ = 'Haruka Yamashita'
-        self.csv_path = '/Volumes/1TB_4TB_GG/Dropbox/Documents_DB/01_Projects/1_Data_Analysis/_data/genetic_code_coddig_aadig_180611.csv'
-        self.bases = ['T', 'C', 'A', 'G']
-        self.table = pd.read_csv(self.csv_path)
+    def __init__(self, csv_path, description=''):
+        self.csv_path = csv_path
+        self.table = pd.read_csv(csv_path)
+        self.description = description
 
     def aadig(self, **kwargs):
-        tmp_df = num.search_items_df(self.table, **kwargs).loc[:, ['aa1', 'aa3', 'aadig']]
+        tmp_df = num.search_items_df(self.table, **kwargs)\
+                    .loc[:, ['aa1', 'aa3', 'aadig']]
         tmp_df.drop_duplicates(inplace=True)
+
         if len(tmp_df.index) != 1:
             raise Exception('Given keyword arguments cannot specify aa')
+        
         return tmp_df.iloc[0]['aadig']
 
     def aa1(self, dig):
@@ -115,13 +92,6 @@ class GeneticCode(object):
 
     def __repr__(self):
         return self.table
-
-
-cds_seq_df_path='/Volumes/1TB_4TB_GG/Dropbox/Documents_DB/01_Projects/011_Programming/_data/databases/cds/cds_seq_df_180329.csv'
-
-int_seq_df_path = '/Volumes/1TB_4TB_GG/Dropbox/Documents_DB/01_Projects/011_Programming/_data/databases/intron/int_seq_df_m18y22_180330.csv'
-
-mel_site_df_path = '/Volumes/1TB_4TB_GG/Dropbox/Documents_DB/01_Projects/011_Programming/_data/Dmel_ref_info/Dmel_info/site_type_info/site_type_df_180330.csv'
 
 class Database(Mapping):
     """ This class inherits Mapping class. __iter__, __getitem__ and __len__ 
@@ -307,7 +277,7 @@ class SeqDB(Database):
         for i, seq_id in zip(id_list, seq_id_list):
             yield i, seq_id, self._d[seq_id]
 
-    def to_fasta(fasta_path, seq_name_encoder=None, itemnum=False, 
+    def to_fasta(self, fasta_path, seq_name_encoder=None, itemnum=False, 
                  sort_by='', ascending=True, **kwargs):
         if not seq_name_encoder:
             seq_name_encoder = lambda x: str(x['info_id'])
@@ -331,60 +301,17 @@ class SeqDB(Database):
 
         self._d = d
 
-class MelExprData(object):
-    def __init__(self):
-        self.path = '/Volumes/1TB_4TB_GG/Dropbox/Documents_DB/01_Projects/1_Data_Analysis/_data/Dmel_ref_info/Dmel_expression/tis_tab_m5_ast12_v6f3_pr_PMo_rnk_prt_per_expr b_HY.csv'
-        self.version = '120904'
-        self.tissue_type = {
-            't1': 'Ad hindgut',
-            't2': 'Ad midgut',
-            't3': 'Ad male ac gl',
-            't4': 'Ad brain',
-            't5': 'Ad crop',
-            't6': 'Lv wd fat body * cut *',
-            't7': 'Ad head * cut *',
-            't8': 'Lv wd Tubules * cut *',
-            't9': 'Ad ovary',
-            't10': 'Ad testis',
-            't11': 'Ad wh fly',
-            't12': 'Ad Salivary gl',
-            't13': 'Ad carcass',
-            't14': 'Ad TA ganglion * cut *',
-            't15': 'Lv fd hindgut',
-            't16': 'Lv fd midgut',
-            't17': 'Lv fd Salivary gl',
-            't18': 'Ad M spermatheca   * cut *',
-            't19': 'Ad V spermatheca   * cut *',
-            't20': 'Lv fd tubule',
-            't21': 'Lv fd fat body',
-            't22': 'Lv fd carcass',
-            't23': 'Lv fd CNS',
-            't24': 'Lv fd trachea',
-            't25': 'S2 cells gr  * cut *',
-            't26': 'Ad fat body',
-            't27': 'Ad eye',
-            't28': 'Ad heart',
-            't29': 'Ad male Ej Dt',
-            't30': 'Lv wh fd',
-            't31': 'Ad female',
-            't32': 'Ad male',
-            't33': 'Sp mitotic',
-            't34': 'Sp meiotic',
-            't35': 'Sp p-meiotic',
-            't36': 'embryo_0_2',
-            't37': 'embryo_4_6',
-            't38': 'embryo_8-10',
-            't39': 'embryo_4_10',
-            't40': 'larval_fed',
-            't41': 'larval_st'
-        }
-        self.data = None
+class ExprData(object):
+    def __init__(self, data=None, version='', tissue_types={}):
+        self.version = version
+        self.tissue_type = tissue_types # e.g. constants.TISSUE_TYPES_a
+        self.data = data
+    
+    @classmethod
+    def load_data_from_table(cls, data_path, version='', tissue_types={}):
+        data = pd.read_csv(data_path)
 
-    def load_data(self):
-        if self.data:
-            raise Exception('Data is already loaded.')
-        else:
-            self.data = pd.read_csv(self.path)
+        return cls(data, version, tissue_types)
 
     def __repr__(self):
-        return 'ver: {0}\t file_name: {1}'.format(self.version, os.path.basename(self.path))
+        return f'ver: {self.version}'
