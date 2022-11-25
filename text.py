@@ -4,53 +4,15 @@ import re
 import pickle
 import pandas as pd
 
-# from . import num
+def do_nothing(input_str: str) -> str:
+    """Returns an input argument as it is. This can be used as a default value 
+    of a Callable object. 
+    """
+    return input_str
 
-def parse_filelist(path, expect_line_start='itemnum: ', avoid=['/*'], 
-                   apply_func=None):
-    ''' Returns a list of file names that are written in a given file.
-    Parameter
-    ---------
-        path: str
-            a path to a file of file name list
-        prefix: str
-            If "prefix" is specified, line starting with prefix will be read.
-        suffix: str
-            If "sufix" is specified, line ending with prefix will be read.
-    Return
-    ------
-        flist: list
-            a list that contains all file names listed in a given file.
-    '''
-    if not expect_line_start:
-        raise Exception('Please input a string to retrieve the expected number of items.')
-
-    if not apply_func:
-        apply_func = lambda x: x
-
-    flist = []
-    with open(path, 'r') as f:
-        for line in f:
-            if line.startswith(expect_line_start):
-                exp_itemnum = int(line.rstrip().split(expect_line_start)[1])
-                continue
-                
-            # checks if the current line starts with the characters 
-            # which are specified to be avoided.
-            bad = 0
-            for bad_char in avoid:
-                if line.startswith(bad_char):
-                    bad += 1
-            if bad > 0:
-                continue
-            
-            flist.append(apply_func(line.rstrip()))
-
-    itemnum = len(flist)
-    assert itemnum == exp_itemnum, f'The item number is expected to be '\
-        '{}, not {}.'.format(expect_line_start, itemnum)
-
-    return flist
+def get_itemnum(itemnum_str: str) -> int:
+    """Reads itemnum string and returns integer. """
+    return int(itemnum_str.split('itemnum:')[1].strip())
 
 def parse_fasta(fasta_path):
     '''Parse a FASTA file and return a dictionary'''
