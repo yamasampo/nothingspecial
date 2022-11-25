@@ -14,6 +14,9 @@ def get_itemnum(itemnum_str: str) -> int:
     """Reads itemnum string and returns integer. """
     return int(itemnum_str.split('itemnum:')[1].strip())
 
+# =============== Old Functions =============== #
+# TODO: Review, renew and replace (if necessary) the old functions
+
 def parse_fasta(fasta_path):
     '''Parse a FASTA file and return a dictionary'''
     
