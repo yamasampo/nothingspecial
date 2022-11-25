@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 
 from scipy import stats
 
-from nothingspecial import num
+from .. import num
 
 sample1 = np.array([104, 109, 112, 114, 116, 118, 118, 119, 121, 123, 125, 126, 126, 128, 128, 128])
 sample2 = np.array([100, 105, 107, 107, 108, 111, 116, 120, 121, 123])

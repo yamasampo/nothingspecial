@@ -4,7 +4,7 @@ import re
 import pickle
 import pandas as pd
 
-from nothingspecial import num
+# from . import num
 
 def parse_filelist(path, expect_line_start='itemnum: ', avoid=['/*'], 
                    apply_func=None):
@@ -84,7 +84,7 @@ def to_fasta(fasta, out_path):
 
 def parse_fasta_in_dir(dir_path, filelist_name='0.filelist'):
     '''Parse Fasta files in a given directory'''
-    flist = text.get_file_list(path=os.path.join(dir_path, filelist_name))
+    flist = get_file_list(path=os.path.join(dir_path, filelist_name))
     fasta_dict = {}
     
     for file_name in flist:
@@ -124,15 +124,6 @@ def fastq_parser(fastq_path):
                        'qual': qual_list})
     print('{0} items in {1}.'.format(len(df.index), fastq_path))
     return df.ix[:, ['seqname', 'seq', 'qualname', 'qual']]
-
-def seq_length(fasta_df, seqname):
-
-    tmp_df = num.search_items_df(fasta_df, seqname=seqname)
-
-    if len(tmp_df.index) != 1:
-        raise Exception('data cannot be specified by seqname "{}".'.format(seqname))
-
-    return len(tmp_df['seq'].iloc[0])
 
 def to_fastq(fastq, file_name):
     '''

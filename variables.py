@@ -7,8 +7,7 @@ import pandas as pd
 
 from collections.abc import Mapping
 
-from nothingspecial import num, pathManage
-from nothingspecial.constants import BASES
+from . import num, pathManage
 
 class MutationCompSet(object):
     def __init__(self):
