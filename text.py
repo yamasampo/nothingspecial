@@ -1,6 +1,10 @@
-import os, sys, re, pickle
+import os
+import sys
+import re
+import pickle
 import pandas as pd
-from myBasic import num
+
+from nothingspecial import num
 
 def parse_filelist(path, expect_line_start='itemnum: ', avoid=['/*'], 
                    apply_func=None):
