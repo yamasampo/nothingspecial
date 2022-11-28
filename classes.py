@@ -7,7 +7,7 @@ import pandas as pd
 
 from collections.abc import Mapping
 
-from . import num, pathManage
+from . import num
 
 class MutationCompSet(object):
     def __init__(self):
@@ -206,43 +206,43 @@ class Database(Mapping):
             name=type(self).__name__, desc=self.description, size=self.__len__()
         )
 
-class DirMap(Database):
-    '''This class inherits Database class. This is for pointing directories locating 
-    at different branches withing folder tree but having same attributes 
-    (ex. species, AA type, aadig).'''
+# class DirMap(Database):
+#     '''This class inherits Database class. This is for pointing directories locating 
+#     at different branches withing folder tree but having same attributes 
+#     (ex. species, AA type, aadig).'''
     
-    def __init__(self, filepat, top, description=''):
-        self.df, self._d = self.get_DirMap(filepat, top)
-        self.description = description
+#     def __init__(self, filepat, top, description=''):
+#         self.df, self._d = self.get_DirMap(filepat, top)
+#         self.description = description
     
-    def gen_dir(self, sort_by='', ascending=True, **kwargs):
-        res_df = self.filter(sort_by, ascending, **kwargs)
-        id_list = list(res_df.index)
+#     def gen_dir(self, sort_by='', ascending=True, **kwargs):
+#         res_df = self.filter(sort_by, ascending, **kwargs)
+#         id_list = list(res_df.index)
         
-        for i in id_list:
-            yield i, self._d[i]
+#         for i in id_list:
+#             yield i, self._d[i]
 
-    def get_DirMap(self, filepat, top, description=''):
-        i = 0
-        dir_dict = {}
-        tmp_df = None
+#     def get_DirMap(self, filepat, top, description=''):
+#         i = 0
+#         dir_dict = {}
+#         tmp_df = None
 
-        for dir_name in pathManage.gen_find_dir(filepat, top):
-            i += 1
-            dir_dict[i] = dir_name
+#         for dir_name in pathManage.gen_find_dir(filepat, top):
+#             i += 1
+#             dir_dict[i] = dir_name
 
-            info_path = glob.glob(
-                os.path.join(dir_name, 'data', '*_info.pickle'))[0]
-            with open(info_path, 'rb') as f:
-                info = pickle.load(f)
+#             info_path = glob.glob(
+#                 os.path.join(dir_name, 'data', '*_info.pickle'))[0]
+#             with open(info_path, 'rb') as f:
+#                 info = pickle.load(f)
 
-            key, value = zip(*sorted(info.items(), key=lambda x: x[0]))
-            if i == 1:
-                tmp_df = pd.DataFrame(columns=[], index=key)
-            tmp_df[i] = list(value)
+#             key, value = zip(*sorted(info.items(), key=lambda x: x[0]))
+#             if i == 1:
+#                 tmp_df = pd.DataFrame(columns=[], index=key)
+#             tmp_df[i] = list(value)
         
-        info_df = tmp_df.T
-        return info_df, dir_dict
+#         info_df = tmp_df.T
+#         return info_df, dir_dict
 
 class SeqDB(Database):
     '''This class inherits Database class. This is for pointing directories locating 
