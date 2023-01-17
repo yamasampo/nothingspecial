@@ -3,43 +3,146 @@ import re
 import pickle
 import pandas as pd
 
-from typing import Iterable, List, Union
 from collections.abc import Mapping
+from typing import Iterable, List, Union, Dict
 
 from . import num
 
-class BinaryCategories:
+class BinaryNumHandler:
+    """ Represents a set of categories (questions/tests) of which answers can 
+    only be binary (YES/NO). 
+    """
     def __init__(self, 
-            categories: List[Union[int, str]] =[], 
-            binary: Union[str, List[Union[str, int]]] = '',
-            decimal: int = None
+            categories: List[Union[int, str]] = [], 
+            binary:     str = '',
+            decimal:    int = None
             ) -> None:
-        
+        """Creates BinaryCategories instance. 
+
+        Attributes
+        ----------
+        categories: List[Union[int, str]]
+        binary:     Union[str, List[Union[str, int]]]
+        decimal:    int
+
+        Methods
+        -------
+        to_binary
+        to_decimal
+        map_to_categories
+        """
+        # Checks the types and formats of arguments.
+        self.__class__.check_categories_format(categories)
+        self.__class__.check_binary_format(binary)
+        self.__class__.check_decimal_format(categories)
+
+        # Set attributes
+        self.categories = categories
+        self.decimal = decimal
+        if binary == '':
+            self.binary = self.to_binary()
+        else:
+            self.binary = binary
+
+    @staticmethod
+    def check_binary_format(binary: str):
+        # Check if binary argument is string type
+        assert isinstance(binary, str)
+
+        # Check if there is no value other than 0 or 1. 
+        elements = set(list(binary))
+        assert len({'0', '1'}.difference(elements)) == 0
+
+    @staticmethod
+    def check_decimal_format(decimal: int):
+        assert isinstance(decimal, int)
+
+    @staticmethod
+    def check_categories_format(categories: List[Union[int, str]]):
+        # Check if categories is Iterable
         assert isinstance(categories, Iterable)
+
+        # Check if elements cannot be re-ordered
         assert not isinstance(categories, set)
         assert not isinstance(categories, dict)
 
-        self.categories = categories
-        # TODO: Need to add a function to confirm format and change format if necessary
-        self.binary = binary 
-        self.decimal = decimal
-
+    # NOTE: These two functions can be setter (replace values of class 
+    # attributes). 
     def to_binary(self):
         return decimal_to_binary(self.decimal)
 
     def to_decimal(self):
         return binary_to_decimal(self.binary)
 
-    def map_to_categories(self):
+    def map_to_categories(self) -> Dict[Union[int, str], str]:
+        """Returns a dictionary of answers (YES:1 / No:0) to each category. 
+        
+        Raises ValueError if 
+        - no category is set in this object
+        - no value is set in this object
+        - the number of 0/1 values is greater than the number of set categories
+        """
+        cat_num = len(self.categories)
+        if cat_num == 0:
+            raise ValueError('Please set categories for mapping.')
+
         if self.binary == '':
             if self.decimal == None:
                 raise ValueError('Please set decimal or binary numbers.')
 
-            binary = self.to_binary()
+            reverse_binary = self.to_binary()[::-1]
         else:
-            binary = self.binary
+            reverse_binary = self.binary[::-1]
 
-        return dict(zip(self.categories, binary))
+        binary_len = len(reverse_binary)
+        if binary_len == cat_num:
+            return dict(zip(self.categories, reverse_binary))
+        
+        # If the number of 0/1 value 
+        if binary_len > cat_num:
+            msg = 'Missing category: The number of given categories is smaller '\
+                  f'than the number o 0/1 values: {cat_num} < {binary_len}'
+            raise ValueError(msg)
+
+        # Align the lengths of binary values and categories. 
+        extend_0s = ['0' for n in range(cat_num) if n >= binary_len]
+        # Add 0s at tail (assume that missing value is in the later categories)
+        reverse_binary += ''.join(extend_0s)
+        # Check if the lengths are the same
+        assert len(reverse_binary) == cat_num
+        # Return dictionary
+        return dict(zip(self.categories, reverse_binary))
+
+    def __len__(self):
+        return len(self.categories)
+
+    def __repr__(self) -> str:
+        class_name = type(self).__name__
+        
+        if self.decimal != None:
+            decimal_str = f'decimal={self.decimal}'
+        else:
+            if self.binary != '':
+                decimal_str = f'decimal={self.decimal}'
+            else:
+                # If empty
+                if len(self.categories) == 0:
+                    return f'{class_name} (Empty)'
+
+                decimal_str = 'Neither decimal or binary value is set.'
+
+        if len(self.categories) > 0:
+            cat_map = self.map_to_categories()
+            cat_map_str = '  Categories\n'+'\n'.join(
+                [f'  {cat}: {bi}' for cat, bi in cat_map.items()])
+        else:
+            # NOTE: The empty cases (no value, no category) are output above, 
+            # so cases that match here are that values are set but category is 
+            # not set. I would not like to allow this situation. In this future, 
+            # I may change to raise an Error for this case. 
+            cat_map_str = '  No category is set'
+            
+        return f'{class_name} ({decimal_str})\n{cat_map_str}'
 
 def decimal_to_binary(decimal: int, verbose: bool = False) -> str:
     """Converts decimal number to an array of binary (0/1). This function 
