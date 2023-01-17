@@ -34,13 +34,16 @@ class BinaryNumHandler:
         # Checks the types and formats of arguments.
         self.__class__.check_categories_format(categories)
         self.__class__.check_binary_format(binary)
-        self.__class__.check_decimal_format(categories)
+        self.__class__.check_decimal_format(decimal)
 
         # Set attributes
         self.categories = categories
         self.decimal = decimal
         if binary == '':
-            self.binary = self.to_binary()
+            if decimal != None:
+                self.binary = self.to_binary()
+            else:
+                self.binary = binary
         else:
             self.binary = binary
 
@@ -48,14 +51,15 @@ class BinaryNumHandler:
     def check_binary_format(binary: str):
         # Check if binary argument is string type
         assert isinstance(binary, str)
-
-        # Check if there is no value other than 0 or 1. 
-        elements = set(list(binary))
-        assert len({'0', '1'}.difference(elements)) == 0
+        if binary != '':
+            # Check if there is no value other than 0 or 1. 
+            elements = set(list(binary))
+            assert len(elements.difference({'0', '1'})) == 0
 
     @staticmethod
     def check_decimal_format(decimal: int):
-        assert isinstance(decimal, int)
+        if decimal != None:
+            assert isinstance(decimal, int)
 
     @staticmethod
     def check_categories_format(categories: List[Union[int, str]]):
@@ -121,27 +125,48 @@ class BinaryNumHandler:
         
         if self.decimal != None:
             decimal_str = f'decimal={self.decimal}'
+
+            if len(self.categories) == 0:
+                # NOTE: The empty cases (no value, no category) are output above, 
+                # so cases that match here are that values are set but category is 
+                # not set. I would not like to allow this situation. In this future, 
+                # I may change to raise an Error for this case. 
+                cat_map_str = '  No category is set'
+            else:
+                cat_map = self.map_to_categories()
+                cat_map_str = '  Categories\n'+'\n'.join(
+                    [f'  {cat} (2 ^ {n}): {cat_map[cat]}' 
+                    for n, cat in enumerate(self.categories)
+                ])
+
         else:
             if self.binary != '':
-                decimal_str = f'decimal={self.decimal}'
+                decimal_str = f'decimal={self.to_decimal()}'
+
+                if len(self.categories) == 0:
+                    # NOTE: The empty cases (no value, no category) are output above, 
+                    # so cases that match here are that values are set but category is 
+                    # not set. I would not like to allow this situation. In this future, 
+                    # I may change to raise an Error for this case. 
+                    cat_map_str = '  No category is set'
+                else:
+                    cat_map = self.map_to_categories()
+                    cat_map_str = '  Categories\n'+'\n'.join(
+                        [f'  {cat} (2 ^ {n}): {cat_map[cat]}' 
+                        for n, cat in enumerate(self.categories)
+                    ])
+                
             else:
                 # If empty
                 if len(self.categories) == 0:
                     return f'{class_name} (Empty)'
 
+                cat_map_str = '  Categories\n'+'\n'.join(
+                    [f'  {cat} (2 ^ {n}): ' 
+                    for n, cat in enumerate(self.categories)
+                ])
                 decimal_str = 'Neither decimal or binary value is set.'
 
-        if len(self.categories) > 0:
-            cat_map = self.map_to_categories()
-            cat_map_str = '  Categories\n'+'\n'.join(
-                [f'  {cat}: {bi}' for cat, bi in cat_map.items()])
-        else:
-            # NOTE: The empty cases (no value, no category) are output above, 
-            # so cases that match here are that values are set but category is 
-            # not set. I would not like to allow this situation. In this future, 
-            # I may change to raise an Error for this case. 
-            cat_map_str = '  No category is set'
-            
         return f'{class_name} ({decimal_str})\n{cat_map_str}'
 
 def decimal_to_binary(decimal: int, verbose: bool = False) -> str:
