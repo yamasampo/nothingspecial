@@ -33,7 +33,7 @@ class BinaryNumHandler:
 
         2. Get decimal value from a given array of 0/1 values
         decimal = bi_handler.to_decimal([1, 0, 1, 1])
-        -> 13
+        -> 13 
         
         Methods
         -------
@@ -45,8 +45,24 @@ class BinaryNumHandler:
         self.__class__.check_categories_format(categories)
 
         # Set attributes
-        self.categories = categories
-        self.description = description
+        self.__categories = categories
+        self.__description = description
+
+    @property
+    def categories(self):
+        return self.__categories
+
+    @categories.setter
+    def categories(self, new_categories):
+        self.__categories = new_categories
+
+    @property
+    def description(self):
+        return self.__description
+
+    @description.setter
+    def description(self, new_description):
+        self.__description = new_description
 
     @staticmethod
     def check_binary_format(binary: Union[str, List[Union[int, str]]]) -> str:
@@ -149,7 +165,7 @@ class BinaryNumHandler:
         - no value is set in this object
         - the number of 0/1 values is greater than the number of set categories
         """
-        cat_num = len(self.categories)
+        cat_num = len(self.__categories)
         if cat_num == 0:
             raise ValueError('Please set categories for mapping.')
         
@@ -186,7 +202,7 @@ class BinaryNumHandler:
         return dict(zip(self.categories, reverse_binary))
 
     def __len__(self):
-        return len(self.categories)
+        return len(self.__categories)
 
     def __repr__(self) -> str:
         class_name = type(self).__name__
@@ -196,10 +212,10 @@ class BinaryNumHandler:
         else:
             cat_str = '  Categories\n'+'\n'.join(
                 [f'  {2 ** n} (2 ^ {n}): {cat}' 
-                for n, cat in enumerate(self.categories)
+                for n, cat in enumerate(self.__categories)
             ])
 
-        return f'{class_name} ({self.description})\n{cat_str}'
+        return f'{class_name} ({self.__description})\n{cat_str}'
 
 class MutationCompSet(object):
     def __init__(self):
