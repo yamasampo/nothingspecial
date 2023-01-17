@@ -9,22 +9,32 @@ from typing import Iterable, List, Union, Dict
 from . import num
 
 class BinaryNumHandler:
-    """ Represents a set of categories (questions/tests) of which answers can 
-    only be binary (YES/NO). 
+    """Represents a set of categories (questions/tests) of which answers can 
+    only be binary (YES/NO). This class may seem like a module because various 
+    staticmethods (functions that do not need to access attributes of the 
+    instance) are available. 
     """
+
     def __init__(self, 
-            categories: List[Union[int, str]] = [], 
-            binary:     str = '',
-            decimal:    int = None
+            categories:     List[Union[int, str]] = [], 
+            description:    str = ''
             ) -> None:
         """Creates BinaryCategories instance. 
 
         Attributes
         ----------
         categories: List[Union[int, str]]
-        binary:     Union[str, List[Union[str, int]]]
-        decimal:    int
+        description: str
 
+        How-to-use
+        ----------
+        1. Creates instance with given categories: a, b, c, and.
+        bi_handler = BinaryNumHandler(list('abcd'))
+
+        2. Get decimal value from a given array of 0/1 values
+        decimal = bi_handler.to_decimal([1, 0, 1, 1])
+        -> 13
+        
         Methods
         -------
         to_binary
@@ -33,54 +43,107 @@ class BinaryNumHandler:
         """
         # Checks the types and formats of arguments.
         self.__class__.check_categories_format(categories)
-        self.__class__.check_binary_format(binary)
-        self.__class__.check_decimal_format(decimal)
 
         # Set attributes
         self.categories = categories
-        self.decimal = decimal
-        if binary == '':
-            if decimal != None:
-                self.binary = self.to_binary()
-            else:
-                self.binary = binary
-        else:
-            self.binary = binary
+        self.description = description
 
     @staticmethod
-    def check_binary_format(binary: str):
+    def check_binary_format(binary: Union[str, List[Union[int, str]]]) -> str:
         # Check if binary argument is string type
-        assert isinstance(binary, str)
-        if binary != '':
+        if isinstance(binary, str):
             # Check if there is no value other than 0 or 1. 
             elements = set(list(binary))
             assert len(elements.difference({'0', '1'})) == 0
+            return binary
+
+        elif isinstance(binary, (list, tuple)):
+            # Convert each element to string
+            elements = set(map(str, binary))
+            assert len(elements.difference({'0', '1'})) == 0
+
+            return ''.join(map(str, binary))
+
+        raise TypeError('binary should be either string, list or tuple.')
 
     @staticmethod
     def check_decimal_format(decimal: int):
         if decimal != None:
             assert isinstance(decimal, int)
 
+        return decimal
+
     @staticmethod
     def check_categories_format(categories: List[Union[int, str]]):
-        # Check if categories is Iterable
-        assert isinstance(categories, Iterable)
+        # Check if categories is list or tuple
+        assert isinstance(categories, (list, tuple))
+        return categories
 
-        # Check if elements cannot be re-ordered
-        assert not isinstance(categories, set)
-        assert not isinstance(categories, dict)
+    @staticmethod
+    def to_binary(decimal: int, verbose: bool = False) -> str:
+        """Converts decimal number to an array of binary (0/1). This function 
+        behaviour is the same as '{0:b}'.format(decimal). 
+        """
+        reverse_binary = []
 
-    # NOTE: These two functions can be setter (replace values of class 
-    # attributes). 
-    def to_binary(self):
-        return decimal_to_binary(self.decimal)
-
-    def to_decimal(self):
-        return binary_to_decimal(self.binary)
-
-    def map_to_categories(self) -> Dict[Union[int, str], str]:
-        """Returns a dictionary of answers (YES:1 / No:0) to each category. 
+        while decimal > 1:
+            if verbose:
+                print(f'Decimal = {decimal}, {decimal % 2}')
+            reverse_binary.append(str(decimal % 2))
+            decimal = decimal // 2
         
+        if verbose:
+            print(f'Decimal = {decimal}, {decimal % 2}')
+
+        reverse_binary.append(str(decimal % 2))
+        binary = reverse_binary[::-1]
+        return ''.join(binary)
+
+    @staticmethod
+    def to_decimal(binary, reverse=False, verbose: bool = False) -> int:
+        """Converts binary code to decimal value. This function behaves as same as
+        int(binary, 2). 
+
+        Parameters
+        ----------
+        binary: str
+        reverse: bool
+            if reverse is True, the first character (or element in Iterable) is 
+            interpreted as the factor 2 ^ 0, otherwise 2 ^ (num-1), where num is 
+            the number of characters. Standard is the latter, therefore False is
+            the default value. 
+        """
+        binary = BinaryNumHandler.check_binary_format(binary)
+        if reverse:
+            binary = binary[::-1]
+
+        factor_num = len(binary)
+        factors = []
+
+        for n, bi in enumerate(binary):
+            power = factor_num - n - 1
+            factor = 2 ** power
+
+            if verbose:
+                print(f'factor = {factor} (2 ^ {power})')
+                if bi == '1':
+                    print('\tadd')
+                elif bi == '0':
+                    print('\tdo not add')
+
+            # Adds the factor if bi == 1, otherwise 0
+            factors.append(int(bi) * factor)
+
+        return sum(factors)
+
+    def map_to_categories(self, 
+            binary: str = '', 
+            decimal: int = None
+            ) -> Dict[Union[int, str], str]:
+        """Returns a dictionary of answers (YES:1 / No:0) to each category. 
+        The first character of binary is interpreted as a factor for 2 ^ 0 
+        (not 2 ^ cat_num - 1). 
+
         Raises ValueError if 
         - no category is set in this object
         - no value is set in this object
@@ -89,14 +152,17 @@ class BinaryNumHandler:
         cat_num = len(self.categories)
         if cat_num == 0:
             raise ValueError('Please set categories for mapping.')
+        
+        binary = self.__class__.check_binary_format(binary)
+        decimal = self.__class__.check_decimal_format(decimal)
 
-        if self.binary == '':
-            if self.decimal == None:
+        if binary == '':
+            if decimal == None:
                 raise ValueError('Please set decimal or binary numbers.')
 
-            reverse_binary = self.to_binary()[::-1]
+            reverse_binary = self.__class__.to_binary(decimal)[::-1]
         else:
-            reverse_binary = self.binary[::-1]
+            reverse_binary = binary
 
         binary_len = len(reverse_binary)
         if binary_len == cat_num:
@@ -105,15 +171,17 @@ class BinaryNumHandler:
         # If the number of 0/1 value 
         if binary_len > cat_num:
             msg = 'Missing category: The number of given categories is smaller '\
-                  f'than the number o 0/1 values: {cat_num} < {binary_len}'
+                  f'than the number of 0/1 values: {cat_num} < {binary_len}'
             raise ValueError(msg)
 
         # Align the lengths of binary values and categories. 
         extend_0s = ['0' for n in range(cat_num) if n >= binary_len]
         # Add 0s at tail (assume that missing value is in the later categories)
         reverse_binary += ''.join(extend_0s)
+
         # Check if the lengths are the same
         assert len(reverse_binary) == cat_num
+
         # Return dictionary
         return dict(zip(self.categories, reverse_binary))
 
@@ -122,94 +190,16 @@ class BinaryNumHandler:
 
     def __repr__(self) -> str:
         class_name = type(self).__name__
-        
-        if self.decimal != None:
-            decimal_str = f'decimal={self.decimal}'
 
-            if len(self.categories) == 0:
-                # NOTE: The empty cases (no value, no category) are output above, 
-                # so cases that match here are that values are set but category is 
-                # not set. I would not like to allow this situation. In this future, 
-                # I may change to raise an Error for this case. 
-                cat_map_str = '  No category is set'
-            else:
-                cat_map = self.map_to_categories()
-                cat_map_str = '  Categories\n'+'\n'.join(
-                    [f'  {cat} (2 ^ {n}): {cat_map[cat]}' 
-                    for n, cat in enumerate(self.categories)
-                ])
-
+        if len(self.categories) == 0:
+            cat_str = '  No category is set'
         else:
-            if self.binary != '':
-                decimal_str = f'decimal={self.to_decimal()}'
+            cat_str = '  Categories\n'+'\n'.join(
+                [f'  {2 ** n} (2 ^ {n}): {cat}' 
+                for n, cat in enumerate(self.categories)
+            ])
 
-                if len(self.categories) == 0:
-                    # NOTE: The empty cases (no value, no category) are output above, 
-                    # so cases that match here are that values are set but category is 
-                    # not set. I would not like to allow this situation. In this future, 
-                    # I may change to raise an Error for this case. 
-                    cat_map_str = '  No category is set'
-                else:
-                    cat_map = self.map_to_categories()
-                    cat_map_str = '  Categories\n'+'\n'.join(
-                        [f'  {cat} (2 ^ {n}): {cat_map[cat]}' 
-                        for n, cat in enumerate(self.categories)
-                    ])
-                
-            else:
-                # If empty
-                if len(self.categories) == 0:
-                    return f'{class_name} (Empty)'
-
-                cat_map_str = '  Categories\n'+'\n'.join(
-                    [f'  {cat} (2 ^ {n}): ' 
-                    for n, cat in enumerate(self.categories)
-                ])
-                decimal_str = 'Neither decimal or binary value is set.'
-
-        return f'{class_name} ({decimal_str})\n{cat_map_str}'
-
-def decimal_to_binary(decimal: int, verbose: bool = False) -> str:
-    """Converts decimal number to an array of binary (0/1). This function 
-    behaviour is the same as '{0:b}'.format(decimal). 
-    """
-    reverse_binary = []
-
-    while decimal > 1:
-        if verbose:
-            print(f'Decimal = {decimal}, {decimal % 2}')
-        reverse_binary.append(str(decimal % 2))
-        decimal = decimal // 2
-    
-    if verbose:
-        print(f'Decimal = {decimal}, {decimal % 2}')
-
-    reverse_binary.append(str(decimal % 2))
-    binary = reverse_binary[::-1]
-    return ''.join(binary)
-
-def binary_to_decimal(binary, verbose: bool = False) -> int:
-    """Converts binary code to decimal value. This function behaves as same as
-    int(binary, 2). 
-    """
-    factor_num = len(binary)
-    factors = []
-
-    for n, bi in enumerate(binary):
-        power = factor_num - n - 1
-        factor = 2 ** power
-
-        if verbose:
-            print(f'factor = {factor} (2 ^ {power})')
-            if bi == '1':
-                print('\tadd')
-            elif bi == '0':
-                print('\tdo not add')
-
-        # Adds the factor if bi == 1, otherwise 0
-        factors.append(int(bi) * factor)
-
-    return sum(factors)
+        return f'{class_name} ({self.description})\n{cat_str}'
 
 class MutationCompSet(object):
     def __init__(self):
