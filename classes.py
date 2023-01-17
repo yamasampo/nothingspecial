@@ -1,13 +1,87 @@
 
-import os
 import re
 import pickle
-import glob
 import pandas as pd
 
+from typing import Iterable, List, Union
 from collections.abc import Mapping
 
 from . import num
+
+class BinaryCategories:
+    def __init__(self, 
+            categories: List[Union[int, str]] =[], 
+            binary: Union[str, List[Union[str, int]]] = '',
+            decimal: int = None
+            ) -> None:
+        
+        assert isinstance(categories, Iterable)
+        assert not isinstance(categories, set)
+        assert not isinstance(categories, dict)
+
+        self.categories = categories
+        # TODO: Need to add a function to confirm format and change format if necessary
+        self.binary = binary 
+        self.decimal = decimal
+
+    def to_binary(self):
+        return decimal_to_binary(self.decimal)
+
+    def to_decimal(self):
+        return binary_to_decimal(self.binary)
+
+    def map_to_categories(self):
+        if self.binary == '':
+            if self.decimal == None:
+                raise ValueError('Please set decimal or binary numbers.')
+
+            binary = self.to_binary()
+        else:
+            binary = self.binary
+
+        return dict(zip(self.categories, binary))
+
+def decimal_to_binary(decimal: int, verbose: bool = False) -> str:
+    """Converts decimal number to an array of binary (0/1). This function 
+    behaviour is the same as '{0:b}'.format(decimal). 
+    """
+    reverse_binary = []
+
+    while decimal > 1:
+        if verbose:
+            print(f'Decimal = {decimal}, {decimal % 2}')
+        reverse_binary.append(str(decimal % 2))
+        decimal = decimal // 2
+    
+    if verbose:
+        print(f'Decimal = {decimal}, {decimal % 2}')
+
+    reverse_binary.append(str(decimal % 2))
+    binary = reverse_binary[::-1]
+    return ''.join(binary)
+
+def binary_to_decimal(binary, verbose: bool = False) -> int:
+    """Converts binary code to decimal value. This function behaves as same as
+    int(binary, 2). 
+    """
+    factor_num = len(binary)
+    factors = []
+
+    for n, bi in enumerate(binary):
+        power = factor_num - n - 1
+        factor = 2 ** power
+
+        if verbose:
+            print(f'factor = {factor} (2 ^ {power})')
+            if bi == '1':
+                print('\tadd')
+            elif bi == '0':
+                print('\tdo not add')
+
+        # Adds the factor if bi == 1, otherwise 0
+        factors.append(int(bi) * factor)
+
+    return sum(factors)
 
 class MutationCompSet(object):
     def __init__(self):
