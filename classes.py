@@ -4,11 +4,11 @@ import pickle
 import pandas as pd
 
 from collections.abc import Mapping
-from typing import Iterable, List, Union, Dict
+from typing import List, Union, Dict
 
 from . import num
 
-class BinaryNumHandler:
+class BinaryCategoryHandler:
     """Represents a set of categories (questions/tests) of which answers can 
     only be binary (YES/NO). This class may seem like a module because various 
     staticmethods (functions that do not need to access attributes of the 
@@ -129,7 +129,7 @@ class BinaryNumHandler:
             the number of characters. Standard is the latter, therefore False is
             the default value. 
         """
-        binary = BinaryNumHandler.check_binary_format(binary)
+        binary = BinaryCategoryHandler.check_binary_format(binary)
         if reverse:
             binary = binary[::-1]
 
@@ -216,6 +216,41 @@ class BinaryNumHandler:
             ])
 
         return f'{class_name} ({self.__description})\n{cat_str}'
+
+# TODO: Future implementation. Currently, I get an error when calling `functions` 
+# and `__repr__`. The error says  
+#    AttributeError: 'super' object has no attribute '_BinaryFunctionHandler__categories'. 
+#
+# class BinaryFunctionHandler(BinaryCategoryHandler):
+#     """Inherits BinaryCategoryHandler class. 
+#     """
+#     def __init__(self, functions: List[Callable] = [], description: str = ''):
+#         categories = [func.__name__ for func in functions]
+#         super().__init__(categories, description)
+
+#         self.__functions = dict(zip(categories, functions))
+
+#     @property
+#     def functions(self):
+#         return super().__categories
+
+#     @staticmethod
+#     def to_decimal(binary, verbose: bool = False) -> int:
+#         return BinaryCategoryHandler.to_decimal(binary, reverse=True, verbose=verbose)
+
+#     def __repr__(self) -> str:
+#         class_name = type(self).__name__
+
+#         if len(self.categories) == 0:
+#             cat_str = '  No function is set'
+#         else:
+#             cat_str = '  Functions\n'+'\n'.join(
+#                 [f'  {2 ** n} (2 ^ {n}): {cat}' 
+#                 for n, cat in enumerate(super().__categories)
+#             ])
+
+#         return f'{class_name} ({super().__description})\n{cat_str}'
+
 
 class MutationCompSet(object):
     def __init__(self):
