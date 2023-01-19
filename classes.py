@@ -3,85 +3,254 @@ import re
 import pickle
 import pandas as pd
 
-from typing import Iterable, List, Union
 from collections.abc import Mapping
+from typing import List, Union, Dict
 
 from . import num
 
-class BinaryCategories:
-    def __init__(self, 
-            categories: List[Union[int, str]] =[], 
-            binary: Union[str, List[Union[str, int]]] = '',
-            decimal: int = None
-            ) -> None:
-        
-        assert isinstance(categories, Iterable)
-        assert not isinstance(categories, set)
-        assert not isinstance(categories, dict)
-
-        self.categories = categories
-        # TODO: Need to add a function to confirm format and change format if necessary
-        self.binary = binary 
-        self.decimal = decimal
-
-    def to_binary(self):
-        return decimal_to_binary(self.decimal)
-
-    def to_decimal(self):
-        return binary_to_decimal(self.binary)
-
-    def map_to_categories(self):
-        if self.binary == '':
-            if self.decimal == None:
-                raise ValueError('Please set decimal or binary numbers.')
-
-            binary = self.to_binary()
-        else:
-            binary = self.binary
-
-        return dict(zip(self.categories, binary))
-
-def decimal_to_binary(decimal: int, verbose: bool = False) -> str:
-    """Converts decimal number to an array of binary (0/1). This function 
-    behaviour is the same as '{0:b}'.format(decimal). 
+class BinaryCategoryHandler:
+    """Represents a set of categories (questions/tests) of which answers can 
+    only be binary (YES/NO). This class may seem like a module because various 
+    staticmethods (functions that do not need to access attributes of the 
+    instance) are available. 
     """
-    reverse_binary = []
 
-    while decimal > 1:
+    def __init__(self, 
+            categories:     List[Union[int, str]] = [], 
+            description:    str = ''
+            ) -> None:
+        """Creates BinaryCategories instance. 
+
+        Attributes
+        ----------
+        categories: List[Union[int, str]]
+        description: str
+
+        How-to-use
+        ----------
+        1. Creates instance with given categories: a, b, c, and.
+        bi_handler = BinaryNumHandler(list('abcd'))
+
+        2. Get decimal value from a given array of 0/1 values
+        decimal = bi_handler.to_decimal([1, 0, 1, 1])
+        -> 13 
+        
+        Methods
+        -------
+        to_binary
+        to_decimal
+        map_to_categories
+        """
+        # Checks the types and formats of arguments.
+        self.__class__.check_categories_format(categories)
+
+        # Set attributes
+        self.__categories = categories
+        self.__description = description
+
+    @property
+    def categories(self):
+        return self.__categories
+
+    @categories.setter
+    def categories(self, new_categories):
+        self.__categories = new_categories
+
+    @property
+    def description(self):
+        return self.__description
+
+    @description.setter
+    def description(self, new_description):
+        self.__description = new_description
+
+    @staticmethod
+    def check_binary_format(binary: Union[str, List[Union[int, str]]]) -> str:
+        # Check if binary argument is string type
+        if isinstance(binary, str):
+            # Check if there is no value other than 0 or 1. 
+            elements = set(list(binary))
+            assert len(elements.difference({'0', '1'})) == 0
+            return binary
+
+        elif isinstance(binary, (list, tuple)):
+            # Convert each element to string
+            elements = set(map(str, binary))
+            assert len(elements.difference({'0', '1'})) == 0
+
+            return ''.join(map(str, binary))
+
+        raise TypeError('binary should be either string, list or tuple.')
+
+    @staticmethod
+    def check_decimal_format(decimal: int):
+        if decimal != None:
+            assert isinstance(decimal, int)
+
+        return decimal
+
+    @staticmethod
+    def check_categories_format(categories: List[Union[int, str]]):
+        # Check if categories is list or tuple
+        assert isinstance(categories, (list, tuple))
+        return categories
+
+    @staticmethod
+    def to_binary(decimal: int, verbose: bool = False) -> str:
+        """Converts decimal number to an array of binary (0/1). This function 
+        behaviour is the same as '{0:b}'.format(decimal). 
+        """
+        reverse_binary = []
+
+        while decimal > 1:
+            if verbose:
+                print(f'Decimal = {decimal}, {decimal % 2}')
+            reverse_binary.append(str(decimal % 2))
+            decimal = decimal // 2
+        
         if verbose:
             print(f'Decimal = {decimal}, {decimal % 2}')
+
         reverse_binary.append(str(decimal % 2))
-        decimal = decimal // 2
-    
-    if verbose:
-        print(f'Decimal = {decimal}, {decimal % 2}')
+        binary = reverse_binary[::-1]
+        return ''.join(binary)
 
-    reverse_binary.append(str(decimal % 2))
-    binary = reverse_binary[::-1]
-    return ''.join(binary)
+    @staticmethod
+    def to_decimal(binary, reverse=False, verbose: bool = False) -> int:
+        """Converts binary code to decimal value. This function behaves as same as
+        int(binary, 2). 
 
-def binary_to_decimal(binary, verbose: bool = False) -> int:
-    """Converts binary code to decimal value. This function behaves as same as
-    int(binary, 2). 
-    """
-    factor_num = len(binary)
-    factors = []
+        Parameters
+        ----------
+        binary: str
+        reverse: bool
+            if reverse is True, the first character (or element in Iterable) is 
+            interpreted as the factor 2 ^ 0, otherwise 2 ^ (num-1), where num is 
+            the number of characters. Standard is the latter, therefore False is
+            the default value. 
+        """
+        binary = BinaryCategoryHandler.check_binary_format(binary)
+        if reverse:
+            binary = binary[::-1]
 
-    for n, bi in enumerate(binary):
-        power = factor_num - n - 1
-        factor = 2 ** power
+        factor_num = len(binary)
+        factors = []
 
-        if verbose:
-            print(f'factor = {factor} (2 ^ {power})')
-            if bi == '1':
-                print('\tadd')
-            elif bi == '0':
-                print('\tdo not add')
+        for n, bi in enumerate(binary):
+            power = factor_num - n - 1
+            factor = 2 ** power
 
-        # Adds the factor if bi == 1, otherwise 0
-        factors.append(int(bi) * factor)
+            if verbose:
+                print(f'factor = {factor} (2 ^ {power})')
+                if bi == '1':
+                    print('\tadd')
+                elif bi == '0':
+                    print('\tdo not add')
 
-    return sum(factors)
+            # Adds the factor if bi == 1, otherwise 0
+            factors.append(int(bi) * factor)
+
+        return sum(factors)
+
+    def map_to_categories(self, 
+            binary: str = '', 
+            decimal: int = None
+            ) -> Dict[Union[int, str], str]:
+        """Returns a dictionary of answers (YES:1 / No:0) to each category. 
+        The first character of binary is interpreted as a factor for 2 ^ 0 
+        (not 2 ^ cat_num - 1). 
+
+        Raises ValueError if 
+        - no category is set in this object
+        - no value is set in this object
+        - the number of 0/1 values is greater than the number of set categories
+        """
+        cat_num = len(self.__categories)
+        if cat_num == 0:
+            raise ValueError('Please set categories for mapping.')
+        
+        binary = self.__class__.check_binary_format(binary)
+        decimal = self.__class__.check_decimal_format(decimal)
+
+        if binary == '':
+            if decimal == None:
+                raise ValueError('Please set decimal or binary numbers.')
+
+            reverse_binary = self.__class__.to_binary(decimal)[::-1]
+        else:
+            reverse_binary = binary
+
+        binary_len = len(reverse_binary)
+        if binary_len == cat_num:
+            return dict(zip(self.categories, reverse_binary))
+        
+        # If the number of 0/1 value 
+        if binary_len > cat_num:
+            msg = 'Missing category: The number of given categories is smaller '\
+                  f'than the number of 0/1 values: {cat_num} < {binary_len}'
+            raise ValueError(msg)
+
+        # Align the lengths of binary values and categories. 
+        extend_0s = ['0' for n in range(cat_num) if n >= binary_len]
+        # Add 0s at tail (assume that missing value is in the later categories)
+        reverse_binary += ''.join(extend_0s)
+
+        # Check if the lengths are the same
+        assert len(reverse_binary) == cat_num
+
+        # Return dictionary
+        return dict(zip(self.categories, reverse_binary))
+
+    def __len__(self):
+        return len(self.__categories)
+
+    def __repr__(self) -> str:
+        class_name = type(self).__name__
+
+        if len(self.categories) == 0:
+            cat_str = '  No category is set'
+        else:
+            cat_str = '  Categories\n'+'\n'.join(
+                [f'  {2 ** n} (2 ^ {n}): {cat}' 
+                for n, cat in enumerate(self.__categories)
+            ])
+
+        return f'{class_name} ({self.__description})\n{cat_str}'
+
+# TODO: Future implementation. Currently, I get an error when calling `functions` 
+# and `__repr__`. The error says  
+#    AttributeError: 'super' object has no attribute '_BinaryFunctionHandler__categories'. 
+#
+# class BinaryFunctionHandler(BinaryCategoryHandler):
+#     """Inherits BinaryCategoryHandler class. 
+#     """
+#     def __init__(self, functions: List[Callable] = [], description: str = ''):
+#         categories = [func.__name__ for func in functions]
+#         super().__init__(categories, description)
+
+#         self.__functions = dict(zip(categories, functions))
+
+#     @property
+#     def functions(self):
+#         return super().__categories
+
+#     @staticmethod
+#     def to_decimal(binary, verbose: bool = False) -> int:
+#         return BinaryCategoryHandler.to_decimal(binary, reverse=True, verbose=verbose)
+
+#     def __repr__(self) -> str:
+#         class_name = type(self).__name__
+
+#         if len(self.categories) == 0:
+#             cat_str = '  No function is set'
+#         else:
+#             cat_str = '  Functions\n'+'\n'.join(
+#                 [f'  {2 ** n} (2 ^ {n}): {cat}' 
+#                 for n, cat in enumerate(super().__categories)
+#             ])
+
+#         return f'{class_name} ({super().__description})\n{cat_str}'
+
 
 class MutationCompSet(object):
     def __init__(self):

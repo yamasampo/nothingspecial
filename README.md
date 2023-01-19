@@ -62,3 +62,15 @@ Based on 2D list
 A collection of constants. 
 
 #### Nucleotide bases
+
+## Module Dependencies
+
+The following modules do not import any functions within `nothingspecial` package (but it does import from non-built-in Python packages, such as pandas and numpy). 
+
+- num
+- text
+
+The following modules import functions from `num` and/or `text` modules. 
+
+- classes
+

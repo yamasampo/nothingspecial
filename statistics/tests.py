@@ -4,7 +4,7 @@ import numpy as np
 # from collections import namedtuple
 # from scipy.stats import distributions, rankdata, mannwhitneyu, tiecorrect
 
-from . import num
+from .. import num
 
 def fd2data(x, fd, scaler=1):
     """ Regenerate data from given frequency distributions for given data. You 

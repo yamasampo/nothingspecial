@@ -1,8 +1,9 @@
 import os
 import re
-import pandas as pd
-from collections import Counter
 import numpy as np
+import pandas as pd
+
+from collections import Counter
 
 def slide_window(data_df, win_size, dat_col_list):
     '''
