@@ -124,7 +124,7 @@ def read_2D_list(
     """
     
     # Initialize a list that will be returned from this function
-    items: Dict[str, List[str]] = []
+    items: Dict[str, List[str]] = {}
     key = ''
     value = []
     exp_itemnum = None
