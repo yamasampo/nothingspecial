@@ -85,13 +85,13 @@ def read_1D_list(
     return items
 
 def read_2D_list(
-        file_path           : str, 
-        item_divisor        : str = '>',
-        comments            : List[str] = ['/*', '#'], 
-        apply_func          : Callable[[str], Any] = do_nothing, 
-        include_key_order   : bool = False,
-        join_value_lines    : bool = False,
-        skip_empty_lines    : bool = True,
+        file_path       :   str, 
+        item_divisor    :   str = '>',
+        comments        :   List[str] = ['/*', '#'], 
+        apply_func      :   Callable[[str], Any] = do_nothing, 
+        join_value_lines:   bool = False,
+        include_key_order:  bool = False,
+        skip_empty_lines:   bool = True,
         # cut_inline_comment = False # TODO: Implement in the future
         ) -> Dict[str, Union[str, List[Any]]]:
     """Read a plain-text file containing 2D list data. 
@@ -181,6 +181,12 @@ def read_2D_list(
                 else:
                     key = line.split(item_divisor)[1]
 
+                if include_key_order:
+                    key = (line.split(item_divisor)[1], key_id)
+                else:
+                    key = line.split(item_divisor)[1]
+                
+                key_id += 1
                 assert key != '', 'Empty key for 2D list is not supported.'
                 value = []
                 key_id += 1
