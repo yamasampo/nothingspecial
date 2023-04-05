@@ -14,6 +14,11 @@ def get_itemnum(itemnum_str: str) -> int:
     """Reads itemnum string and returns integer. """
     return int(itemnum_str.split('itemnum:')[1].strip())
 
+def write_1D_list_to_file(items, file_path):
+    with open(file_path, 'w') as f:
+        print('itemnum:', len(items), file=f)
+        print('\n'.join(items), file=f)
+
 # =============== Old Functions =============== #
 # TODO: Review, renew and replace (if necessary) the old functions
 
