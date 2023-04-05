@@ -175,6 +175,11 @@ def read_2D_list(
                         items[key] = ''.join(value)
                     else:
                         items[key] = value
+                
+                if include_key_order:
+                    key = (line.split(item_divisor)[1], key_id)
+                else:
+                    key = line.split(item_divisor)[1]
 
                 if include_key_order:
                     key = (line.split(item_divisor)[1], key_id)
@@ -184,7 +189,8 @@ def read_2D_list(
                 key_id += 1
                 assert key != '', 'Empty key for 2D list is not supported.'
                 value = []
-
+                key_id += 1
+                
             else:
                 value.append(apply_func(line))
     
