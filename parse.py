@@ -91,6 +91,7 @@ def read_2D_list(
         apply_func          : Callable[[str], Any] = do_nothing, 
         join_value_lines    : bool = False,
         include_key_order   : bool = False,
+        skip_headers        : int = 0, 
         skip_empty_lines    : bool = True, 
         read_values         : bool = True
         # cut_inline_comment = False # TODO: Implement in the future
@@ -115,6 +116,9 @@ def read_2D_list(
     join_value_lines: bool, optional (default: False)
         Whether to combine elements of a value into one string. For example, 
         give True when reading a multi-FASTA file. 
+    skip_headers: int, opetional (default: 0)
+        The number of header lines to skip reading. header lines may or may not 
+        be comment out. Empty lines are not counted as headers. 
     skip_empty_lines: bool, optional (default: True)
         Whether to skip empty lines. 
     read_values: bool, optional (default: True)
@@ -134,6 +138,7 @@ def read_2D_list(
     key_id = 0
     value = []
     exp_itemnum = None
+    line_count = 0
 
     # Check if item_divisor is a string and is not empty. 
     check_item_divisor(item_divisor)
@@ -151,6 +156,12 @@ def read_2D_list(
                 # If skip_empty_lines option is True
                 if skip_empty_lines:
                     # Go to the next line
+                    continue
+            # If the line is not empty
+            else:
+                # Increment line count
+                line_count += 1
+                if line_count <= skip_headers:
                     continue
 
             # If a line starts with 'itemnum:'
