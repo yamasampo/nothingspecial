@@ -85,13 +85,14 @@ def read_1D_list(
     return items
 
 def read_2D_list(
-        file_path       :   str, 
-        item_divisor    :   str = '>',
-        comments        :   List[str] = ['/*', '#'], 
-        apply_func      :   Callable[[str], Any] = do_nothing, 
-        join_value_lines:   bool = False,
-        include_key_order:  bool = False,
-        skip_empty_lines:   bool = True,
+        file_path           : str, 
+        item_divisor        : str = '>',
+        comments            : List[str] = ['/*', '#'], 
+        apply_func          : Callable[[str], Any] = do_nothing, 
+        join_value_lines    : bool = False,
+        include_key_order   : bool = False,
+        skip_empty_lines    : bool = True, 
+        read_values         : bool = True
         # cut_inline_comment = False # TODO: Implement in the future
         ) -> Dict[str, Union[str, List[Any]]]:
     """Read a plain-text file containing 2D list data. 
@@ -116,6 +117,9 @@ def read_2D_list(
         give True when reading a multi-FASTA file. 
     skip_empty_lines: bool, optional (default: True)
         Whether to skip empty lines. 
+    read_values: bool, optional (default: True)
+        Whether to read non-key lines (e.g., nucleotide sequences in FASTA file).
+        If a user wants to get only sequence IDs, set read_values = False. 
 
     Return
     ------
@@ -171,24 +175,25 @@ def read_2D_list(
                 # If this is not empty (meaning that this is not the first item)
                 if key != '':
                     # Assign key and value to the items dictionary
-                    if join_value_lines:
-                        items[key] = ''.join(value)
+                    if read_values:
+                        if join_value_lines:
+                            items[key] = ''.join(value)
+                        else:
+                            items[key] = value
                     else:
-                        items[key] = value
+                        # Assign None if read_values is False.
+                        items[key] = None
                 
-                if include_key_order:
-                    key = (line.split(item_divisor)[1], key_id)
-                else:
-                    key = line.split(item_divisor)[1]
-
+                # Get item key from the current line
                 if include_key_order:
                     key = (line.split(item_divisor)[1], key_id)
                 else:
                     key = line.split(item_divisor)[1]
                 
-                key_id += 1
+                # Check if key is not empty
                 assert key != '', 'Empty key for 2D list is not supported.'
                 value = []
+                # Increment key ID    
                 key_id += 1
                 
             else:
@@ -196,10 +201,13 @@ def read_2D_list(
     
     if key != '':
         # Assign key and value to the items dictionary
-        if join_value_lines:
-            items[key] = ''.join(value)
+        if read_values:
+            if join_value_lines:
+                items[key] = ''.join(value)
+            else:
+                items[key] = value
         else:
-            items[key] = value
+            items[key] = None
 
     if exp_itemnum != None:
         # Raise Assertion error if the observed number of items is different 
