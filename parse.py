@@ -15,6 +15,7 @@ def read_1D_list(
         comments        : List[str] = ['/*', '#'], 
         apply_func      : Callable[[str], Any] = do_nothing, 
         skip_empty_lines: bool = True,
+        skip_headers    : int = 0, 
         # cut_inline_comment = False # TODO: Implement in the future
         ) -> List[Any]:
     """Read a plain-text file containing 1D list data. 
@@ -42,6 +43,7 @@ def read_1D_list(
     # Initialize a list that will be returned from this function
     items: List[str] = []
     exp_itemnum = None
+    line_count = 0
 
     # Open the input file by a read mode
     with open(file_path, 'r') as f:
@@ -56,6 +58,11 @@ def read_1D_list(
                 # If skip_empty_lines option is True
                 if skip_empty_lines:
                     # Go to the next line
+                    continue
+            else:
+                line_count += 1
+
+                if line_count <= skip_headers:
                     continue
 
             # If a line starts with 'itemnum:'
