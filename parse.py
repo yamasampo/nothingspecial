@@ -16,6 +16,7 @@ def read_1D_list(
         apply_func      : Callable[[str], Any] = do_nothing, 
         skip_empty_lines: bool = True,
         skip_headers    : int = 0, 
+        header_parser   : Callable[[List[str]], Any] = do_nothing
         # cut_inline_comment = False # TODO: Implement in the future
         ) -> List[Any]:
     """Read a plain-text file containing 1D list data. 
@@ -44,6 +45,7 @@ def read_1D_list(
     items: List[str] = []
     exp_itemnum = None
     line_count = 0
+    header_lines = []
 
     # Open the input file by a read mode
     with open(file_path, 'r') as f:
@@ -63,6 +65,7 @@ def read_1D_list(
                 line_count += 1
 
                 if line_count <= skip_headers:
+                    header_lines.append(line)
                     continue
 
             # If a line starts with 'itemnum:'
@@ -88,8 +91,8 @@ def read_1D_list(
         # Raise Assertion error if the observed number of items is different 
         # from the expected. 
         check_item_number(len(items), exp_itemnum)
-
-    return items
+    
+    return items, header_parser(header_lines)
 
 def read_2D_list(
         file_path           : str, 
