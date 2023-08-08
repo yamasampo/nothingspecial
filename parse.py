@@ -53,7 +53,7 @@ def read_1D_list(
         for l in f:
             # Remove empty characters (e.g., space, tab or next line) on both 
             # left and right ends
-            line = l.strip()
+            line = l.rstrip('\n')
 
             # If a line is empty
             if line == '':
@@ -159,7 +159,7 @@ def read_2D_list(
         for l in f:
             # Remove empty characters (e.g., space, tab or next line) on both 
             # left and right ends
-            line = l.strip()
+            line = l.rstrip('\n')
 
             # If a line is empty
             if line == '':
