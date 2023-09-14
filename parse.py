@@ -3,6 +3,7 @@ takes a file path as input and output an object (object types depend on data
 types). 
 """
 
+from warnings import warn
 from typing import List, Dict, Union, Callable, Any
 
 from .text import get_itemnum, do_nothing
@@ -13,6 +14,7 @@ from .check import check_item_number, check_item_divisor
 def read_1D_list(
         file_path       : str, 
         comments        : List[str] = ['/*', '#'], 
+        itemnum         : Union[str, int] = 'infer',
         apply_func      : Callable[[str], Any] = do_nothing, 
         skip_empty_lines: bool = True,
         skip_headers    : int = 0, 
@@ -69,11 +71,15 @@ def read_1D_list(
                     continue
 
             # If a line starts with 'itemnum:'
-            if line.startswith('itemnum:'):
-                # Get the expected number of items
-                exp_itemnum = get_itemnum(line)
-                # Go to the next line
-                continue
+            if itemnum == 'infer':
+                if line.startswith('itemnum:'):
+                    # Get the expected number of items
+                    exp_itemnum = get_itemnum(line)
+                    # Go to the next line
+                    continue
+
+            elif isinstance(itemnum, int):
+                exp_itemnum = itemnum                
 
             # Check if this a comment line
             full_line_comment = [
@@ -91,6 +97,11 @@ def read_1D_list(
         # Raise Assertion error if the observed number of items is different 
         # from the expected. 
         check_item_number(len(items), exp_itemnum)
+    else:
+        if itemnum == 'infer':
+            msg = 'itemnum could not be inferred because a line starting from '\
+                  '"itemnum:" was not found.'
+            warn(msg)
     
     return items, header_parser(header_lines)
 
