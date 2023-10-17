@@ -8,15 +8,30 @@ def check_item_divisor(item_divisor):
     assert isinstance(item_divisor, str)
     assert item_divisor != ''
 
-def check_dir_exists(dir_path):
-    """Raises FileNotFoundError if a given directory does not exist. 
+def check_dirs_exist(*dir_paths):
+    """Raises FileNotFoundError if any of given directories does not exist. 
     """
-    if not os.path.isdir(dir_path):
-        raise FileNotFoundError(dir_path)
+    for dir_path in dir_paths:
+        if not os.path.isdir(dir_path):
+            raise FileNotFoundError(dir_path)
     
-def check_dir_not_exist(dir_path):
-    """Raises FileExistsError if a given directory exists. 
+def check_dirs_not_exist(*dir_paths):
+    """Raises FileExistsError if any of given directories exists. 
     """
-    if os.path.isdir(dir_path):
-        raise FileExistsError(dir_path)
+    for dir_path in dir_paths:
+        if os.path.isdir(dir_path):
+            raise FileExistsError(dir_path)
 
+def check_files_exist(*file_paths):
+    """Raises FileNotFoundError if any of given files does not exist. 
+    """
+    for file_path in file_paths:
+        if not os.path.isfile(file_path):
+            raise FileNotFoundError(file_path)
+    
+def check_files_not_exist(*file_paths):
+    """Raises FileExistsError if any of given files exists. 
+    """
+    for file_path in file_paths:
+        if os.path.isfile(file_path):
+            raise FileExistsError(file_path)
