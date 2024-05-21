@@ -122,16 +122,17 @@ def to_fastq(fastq, file_name):
         print('\n'.join(fastq_lines), file=f)
         print(' Written in {}'.format(file_name))
 
-def to_filelist(dir_path):
-    '''Return a file list in a given directory'''
-    l1 = os.listdir(dir_path)
-    l2= [a for a in l1 if not a.startswith('.')]
-    flist = [a for a in l2 if not a.startswith('0')]
+# NOTE: This function was moved into evogen_share.file_IO on 2024.5.21 by HY.
+# def to_filelist(dir_path):
+#     '''Return a file list in a given directory'''
+#     l1 = os.listdir(dir_path)
+#     l2= [a for a in l1 if not a.startswith('.')]
+#     flist = [a for a in l2 if not a.startswith('0')]
 
-    with open(os.path.join(dir_path, '0.filelist'), 'w') as f:
-        print('itemnum: '+str(len(flist)), file=f)
-        print('\n'.join(flist), file=f)
-    return flist
+#     with open(os.path.join(dir_path, '0.filelist'), 'w') as f:
+#         print('itemnum: '+str(len(flist)), file=f)
+#         print('\n'.join(flist), file=f)
+#     return flist
 
 def get_file_list(path, avoid=['itemnum'], prefix='', sufix=''):
     '''
