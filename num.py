@@ -5,6 +5,8 @@ import pandas as pd
 
 from collections import Counter
 
+from evogen_share.stats import bootstrap
+
 def slide_window(data_df, win_size, dat_col_list):
     '''
     Parameters
@@ -144,43 +146,44 @@ def adjust_average(data, average=1000, divisor=None, integer=False):
 
     return out
 
-def bootstrap(data, rep_num, output='matrix'):
-    '''
-    Returns a list of means of resampled data.
+# NOTE: This function is moved to evogen_share.stats.
+# def bootstrap(data, rep_num, output='matrix'):
+#     '''
+#     Returns a list of means of resampled data.
 
-    Parameters
-    ----------
-    data: list
-        array-like data
-    rep_num: int
-        number of replications. bootstrap will be repeated this number of times.
-    output: str, 'mean' or 'matrix'
-        output info. if mean was specified, only means of bootstrapped data will 
-        be outputted.
+#     Parameters
+#     ----------
+#     data: list
+#         array-like data
+#     rep_num: int
+#         number of replications. bootstrap will be repeated this number of times.
+#     output: str, 'mean' or 'matrix'
+#         output info. if mean was specified, only means of bootstrapped data will 
+#         be outputted.
 
-    '''
-    data = np.array(data)
-    boot_dat = []
+#     '''
+#     data = np.array(data)
+#     boot_dat = []
 
-    for i in range(rep_num):
-        index = np.random.choice(len(data), len(data), replace=True)
-        index.sort()
-        if output == 'index':
-            boot_dat.append(index)
-            continue
+#     for i in range(rep_num):
+#         index = np.random.choice(len(data), len(data), replace=True)
+#         index.sort()
+#         if output == 'index':
+#             boot_dat.append(index)
+#             continue
 
-        new_data = data[index]
-        if output == 'mean':
-            boot_dat.append(np.mean(new_data))
-        elif output == 'matrix':
-            boot_dat.append(np.array(new_data))
+#         new_data = data[index]
+#         if output == 'mean':
+#             boot_dat.append(np.mean(new_data))
+#         elif output == 'matrix':
+#             boot_dat.append(np.array(new_data))
 
-    if len(boot_dat) != rep_num:
-        raise Exception('bootstrapped data has excess or lack of data.')
+#     if len(boot_dat) != rep_num:
+#         raise Exception('bootstrapped data has excess or lack of data.')
 
-    boot_array = np.array(boot_dat)
-    # boot_array.sort()
-    return boot_array
+#     boot_array = np.array(boot_dat)
+#     # boot_array.sort()
+#     return boot_array
 
 def median_CIs(data, ci=95):
     lower_ci = np.percentile(data, 100-ci)
@@ -266,6 +269,7 @@ def bootstrap_df2(df, bin_col, data_col, rep_num, ci=95):
     )
     return stat_df
 
-def myround(a, ndigits=2):
-    n = 10 ** ndigits
-    return (a * n * 2 + 1) // 2 / n
+# NOTE: This function is moved to evogen_share.utils.
+# def myround(a, ndigits=2):
+#     n = 10 ** ndigits
+#     return (a * n * 2 + 1) // 2 / n

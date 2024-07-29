@@ -134,50 +134,50 @@ def to_fastq(fastq, file_name):
 #         print('\n'.join(flist), file=f)
 #     return flist
 
-def get_file_list(path, avoid=['itemnum'], prefix='', sufix=''):
-    '''
-    Returns a list of file names that are written in a given file.
-    Parameter
-    ---------
-        path: str
-            a path to a file of file name list
-        avoid: str
-            a word you do not want to include in output file list
-        prefix: str
-            If "prefix" is specified, this word will be contained
-            at the beginning of all file names in output list.
-        sufix: str
-            If "sufix" is specified, this word will be contained
-            at the end of all file names in output list.
-    Return
-    ------
-        flist: list
-            a list that contains all file names listed in a given file.
-    '''
-    fname = ''
-    flist = []
-    with open(path, 'r') as f:
-        for line in f:
-            bad = 0
+# def get_file_list(path, avoid=['itemnum'], prefix='', sufix=''):
+#     '''
+#     Returns a list of file names that are written in a given file.
+#     Parameter
+#     ---------
+#         path: str
+#             a path to a file of file name list
+#         avoid: str
+#             a word you do not want to include in output file list
+#         prefix: str
+#             If "prefix" is specified, this word will be contained
+#             at the beginning of all file names in output list.
+#         sufix: str
+#             If "sufix" is specified, this word will be contained
+#             at the end of all file names in output list.
+#     Return
+#     ------
+#         flist: list
+#             a list that contains all file names listed in a given file.
+#     '''
+#     fname = ''
+#     flist = []
+#     with open(path, 'r') as f:
+#         for line in f:
+#             bad = 0
 
-            for bad_char in avoid:
-                if line.startswith(bad_char):
-                    bad += 1
-            if bad > 0:
-                continue
+#             for bad_char in avoid:
+#                 if line.startswith(bad_char):
+#                     bad += 1
+#             if bad > 0:
+#                 continue
                 
-            if prefix:
-                if sufix:
-                    fname = prefix+line.rstrip()+sufix
-                else:
-                    fname = prefix+line.rstrip()
-            elif sufix:
-                fname = line.rstrip()+sufix
-            else:
-                fname = line.rstrip()
-            flist.append(fname)
-    # print('{0} items in {1}'.format(len(flist), path))
-    return flist
+#             if prefix:
+#                 if sufix:
+#                     fname = prefix+line.rstrip()+sufix
+#                 else:
+#                     fname = prefix+line.rstrip()
+#             elif sufix:
+#                 fname = line.rstrip()+sufix
+#             else:
+#                 fname = line.rstrip()
+#             flist.append(fname)
+#     # print('{0} items in {1}'.format(len(flist), path))
+#     return flist
 
 def match_2lists(query_list, ref_list, unmatch=False):
     '''
