@@ -179,47 +179,6 @@ def to_fastq(fastq, file_name):
 #     # print('{0} items in {1}'.format(len(flist), path))
 #     return flist
 
-def match_2lists(query_list, ref_list, unmatch=False):
-    '''
-    Returns a list containing identical items between two given lists and
-    a list containing items not in the reference list.
-    '''
-    match_list = []
-    unmatch_list = []
-    auxDict = dict.fromkeys(ref_list)
-
-    for item in query_list:
-        if item in auxDict:
-            match_list.append(item)
-            auxDict[item] = None
-        else:
-            unmatch_list.append(item)
-            auxDict[item] = None
-    if unmatch:
-        return match_list, unmatch_list
-    else:
-        return match_list
-
-def sort_strings_by_num(data):
-    '''
-    Sort a series of strings by embedded numbers that are in strnigs.
-    '''
-    re_digits=re.compile(r'(\d+)')
-
-    def embedded_num(s):
-        pieces = re_digits.split(s)
-        pieces[1::2] = map(int, pieces[1::2])
-        return pieces
-
-    aux = [(embedded_num(s), s) for s in data]
-    aux.sort()
-    return [s for __, s in aux]
-
-def get_key_by_value(dict, value):
-    for k, v in dict.items():
-        if v == value:
-            return k
-
 def read_big_pickle(pickle_path, max_bytes=2**31-1):
 
     bytes_in = bytearray(0)
